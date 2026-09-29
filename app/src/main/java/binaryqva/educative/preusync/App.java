@@ -41,17 +41,17 @@ public class App extends Application {
         CacheManager.getInstance().init(this);
 
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            String trace = AppLogger.getStackTraceString(throwable);
-            AppLogger.e(TAG, "ERROR CRÍTICO DETECTADO: " + trace);
+        String trace = AppLogger.getStackTraceString(throwable);
+        AppLogger.e(TAG, "ERROR CRÍTICO DETECTADO: " + trace);
 
-            Intent intent = new Intent(getApplicationContext(), CrashReportActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            intent.putExtra("error", trace);
-            startActivity(intent);
+        Intent intent = new Intent(getApplicationContext(), CrashReportActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("error", trace);
+        startActivity(intent);
 
-            Process.killProcess(Process.myPid());
-            System.exit(1);
-        });
+        Process.killProcess(Process.myPid());
+        System.exit(1);
+    });
 
         AppLogger.i(TAG, "Entorno PreuSync inicializado correctamente");
     }

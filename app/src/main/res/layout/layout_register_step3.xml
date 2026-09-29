@@ -91,7 +91,7 @@
         android:layout_marginTop="@dimen/padding_12dp"
         android:hint="@string/hint_tutee"
         android:visibility="gone"
-        app:helperText="Nombre de usuario del educando"
+        app:helperText="@string/helper_tutee_username"
         app:startIconDrawable="@drawable/ic_person">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/tuteeEditText"

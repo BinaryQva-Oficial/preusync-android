@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: OnboardingActivity.java
- * Versión: v2.0.1
+ * Versión: v2.1.0
  * Descripción: Flujo introductorio modernizado. Centraliza la navegación y 
- *              el control de estados mediante ViewModel.
+ *              el control de estados mediante ViewModel con indicadores unificados.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -15,7 +15,6 @@ package binaryqva.educative.preusync.ui.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 import androidx.fragment.app.Fragment;
@@ -24,28 +23,26 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import binaryqva.educative.preusync.R;
-import binaryqva.educative.preusync.ui.viewmodels.OnboardingViewModel;
 import binaryqva.educative.preusync.ui.adapters.ViewPagerAdapter;
-import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingWelcomeFragment;
 import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingFeaturesFragment;
-import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingTermsFragment;
-import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingPermissionsFragment;
 import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingFinalFragment;
+import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingPermissionsFragment;
+import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingTermsFragment;
+import binaryqva.educative.preusync.ui.fragments.onboarding.OnboardingWelcomeFragment;
+import binaryqva.educative.preusync.ui.viewmodels.OnboardingViewModel;
 import binaryqva.educative.preusync.utils.common.PreferenceManager;
 
 public class OnboardingActivity extends BaseActivity {
 
     private ViewPager2 viewPager;
-    private TabLayout tabLayout;
     private MaterialButton buttonBack;
     private ExtendedFloatingActionButton buttonNext;
+    private View[] indicators;
     
     private OnboardingViewModel viewModel;
     private ViewPagerAdapter pagerAdapter;
@@ -68,9 +65,16 @@ public class OnboardingActivity extends BaseActivity {
 
     private void bindViews() {
         viewPager = findViewById(R.id.viewPager);
-        tabLayout = findViewById(R.id.tabLayout);
         buttonBack = findViewById(R.id.buttonBack);
         buttonNext = findViewById(R.id.buttonNext);
+
+        indicators = new View[]{
+            findViewById(R.id.onboardingIndicator1),
+            findViewById(R.id.onboardingIndicator2),
+            findViewById(R.id.onboardingIndicator3),
+            findViewById(R.id.onboardingIndicator4),
+            findViewById(R.id.onboardingIndicator5)
+        };
 
         buttonBack.setOnClickListener(v -> previousPage());
         buttonNext.setOnClickListener(v -> handleNextClick());
@@ -88,7 +92,7 @@ public class OnboardingActivity extends BaseActivity {
         viewPager.setAdapter(pagerAdapter);
         viewPager.setUserInputEnabled(true);
 
-        // Transformación de página moderna y fluida con duración extendida
+        // Transformación de página moderna y fluida
         viewPager.setPageTransformer((page, position) -> {
             float absPos = Math.abs(position);
             page.setAlpha(1.0f - absPos);
@@ -99,15 +103,6 @@ public class OnboardingActivity extends BaseActivity {
             
             page.setTranslationX(position * -page.getWidth() * 0.5f);
         });
-
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {}).attach();
-
-        // Deshabilitar clics en las pestañas para evitar navegación no autorizada
-        LinearLayout tabStrip = (LinearLayout) tabLayout.getChildAt(0);
-        for (int i = 0; i < tabStrip.getChildCount(); i++) {
-            tabStrip.getChildAt(i).setClickable(false);
-            tabStrip.getChildAt(i).setOnTouchListener((v, event) -> true);
-        }
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -132,7 +127,18 @@ public class OnboardingActivity extends BaseActivity {
             buttonNext.setText(getString(R.string.button_next));
             buttonNext.setIconResource(R.drawable.ic_arrow_forward);
         }
+
+        updateIndicators(position);
         updateButtonState();
+    }
+
+    private void updateIndicators(int position) {
+        if (indicators == null) return;
+        for (int i = 0; i < indicators.length; i++) {
+            if (indicators[i] != null) {
+                indicators[i].setBackgroundResource(i <= position ? R.drawable.bg_onboarding_indicator_active : R.drawable.bg_onboarding_indicator_inactive);
+            }
+        }
     }
 
     private void updateButtonState() {

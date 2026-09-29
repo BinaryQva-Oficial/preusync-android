@@ -3,35 +3,11 @@
     ============================================================================
     Proyecto: PreuSync
     Layout: item_profile_header.xml
-    Versión: v1.0.0
-    Descripción: Cabecera del perfil con datos del usuario (nombre, avatar, rol).
+    Versión: v2.0.0
+    Descripción: Cabecera estilizada del perfil con nombres segmentados, avatar,
+                 rol y ubicación jerárquica (escuela, municipio, provincia).
     Autor: JiroxDEV
     Licensed under the GNU Affero General Public License v3
-    ============================================================================
--->
-
-<!--
-    ============================================================================
-    item_profile_header.xml
-    ============================================================================
-
-    📌 HEADER DEL PERFIL (TYPE_PROFILE_HEADER)
-    ============================================================================
-
-    Este layout representa la cabecera del perfil de usuario dentro del RecyclerView.
-    Contiene:
-      - Avatar (inicial o imagen de rol)
-      - Nombre y apellidos
-      - Nombre de usuario
-      - Rol (traducido)
-      - Información adicional según el rol (escuela, grupo, tutor, etc.)
-      - Número de identidad
-      - Estado de verificación (icono)
-      - Accesso a la edición del avatar (click en el avatar)
-
-    🔥 NOTA: Este layout reemplaza el CardView que antes estaba dentro del NestedScrollView.
-    Ahora es un ítem más del RecyclerView, lo que elimina el conflicto de scroll anidado.
-
     ============================================================================
 -->
 
@@ -42,157 +18,198 @@
     style="@style/Widget.PreuSync.CardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/padding_8dp"
-    android:layout_marginEnd="@dimen/padding_8dp"
-    android:layout_marginTop="@dimen/padding_8dp"
-    android:layout_marginBottom="@dimen/padding_8dp">
+    android:layout_marginHorizontal="@dimen/padding_8dp"
+    android:layout_marginVertical="@dimen/padding_8dp">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/padding_16dp">
 
-        <!-- Contenido principal del perfil -->
+        <!-- Avatar (Izquierda) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAvatar"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            app:cardCornerRadius="36dp"
+            app:cardBackgroundColor="?attr/colorAccent"
+            android:foreground="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            app:strokeWidth="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Texto de inicial -->
+            <TextView
+                android:id="@+id/initialAvatarText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorBackground"
+                android:visibility="gone"
+                tools:text="D" />
+
+            <!-- Imagen de rol o foto -->
+            <ImageView
+                android:id="@+id/roleAvatarImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="14dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"
+                android:src="@drawable/ic_school"
+                android:contentDescription="@string/hint_role" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Nombre(s) arriba y Apellidos abajo (A la derecha del Avatar) -->
         <LinearLayout
-            android:id="@+id/profileContent"
-            android:layout_width="match_parent"
+            android:id="@+id/nameContainer"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="32dp"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="@id/cardAvatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/cardAvatar"
+            app:layout_constraintBottom_toBottomOf="@id/cardAvatar">
 
-            <!-- Fila: Avatar + Nombre -->
-            <LinearLayout
+            <TextView
+                android:id="@+id/firstNameText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorText"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Daniel Alejandro" />
 
-                <!-- Avatar -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardAvatar"
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    app:cardCornerRadius="36dp"
-                    app:cardBackgroundColor="?attr/colorAccent"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:visibility="visible"
-                    app:strokeWidth="0dp">
-
-                    <!-- Texto de inicial (cuando el avatar es una inicial) -->
-                    <TextView
-                        android:id="@+id/initialAvatarText"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:textSize="@dimen/text_size_32sp"
-                        android:textColor="?attr/colorBackground"
-                        android:visibility="gone"
-                        tools:text="U" />
-
-                    <!-- Imagen de rol (cuando el avatar es un icono de rol) -->
-                    <ImageView
-                        android:id="@+id/roleAvatarImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="@dimen/padding_14dp"
-                        android:scaleType="fitCenter"
-                        android:visibility="gone"
-                        android:src="@drawable/ic_school"
-                        android:contentDescription="@string/hint_role" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Nombre y apellidos -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="@dimen/padding_16dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/firstNameText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorText"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        tools:text="Usuario" />
-
-                    <TextView
-                        android:id="@+id/lastNameText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/padding_2dp"
-                        android:textSize="@dimen/text_size_18sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorText"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        tools:text="Prueba" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Username -->
             <TextView
-                android:id="@+id/usernameText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/padding_8dp"
-                android:textSize="@dimen/text_size_14sp"
-                android:textColor="?attr/colorAccent"
-                tools:text="@string/hint_username" />
-
-            <!-- Rol -->
-            <TextView
-                android:id="@+id/roleText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/padding_2dp"
-                android:textSize="@dimen/text_size_14sp"
-                android:textColor="?attr/colorTextHint"
-                tools:text="@string/hint_role" />
-
-            <!-- Información adicional del rol (escuela, grupo, tutor, responsabilidades) -->
-            <TextView
-                android:id="@+id/roleInfoText"
+                android:id="@+id/lastNameText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/padding_12dp"
-                android:textSize="@dimen/text_size_14sp"
+                android:layout_marginTop="2dp"
+                android:textSize="15sp"
                 android:textColor="?attr/colorTextHint"
-                android:visibility="gone"
-                tools:text="@string/profile_school_label" />
-
-            <!-- Carnet de identidad -->
-            <TextView
-                android:id="@+id/idText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/card_elevation"
-                android:textSize="@dimen/text_size_14sp"
-                android:textColor="?attr/colorTextHint"
-                android:visibility="gone"
-                tools:text="@string/label_id" />
-
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Pupo González" />
         </LinearLayout>
 
-        <!-- Ícono de estado (verificado, pendiente, baneado) -->
+        <!-- Ícono de Verificación (Esquina superior derecha) -->
         <ImageView
             android:id="@+id/statusImage"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_verified"
             app:tint="?attr/colorAccent"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="@dimen/card_elevation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             android:contentDescription="@string/label_verified" />
 
-    </RelativeLayout>
+        <!-- Información de Rol e Identificación (Parte inferior izquierda) -->
+        <LinearLayout
+            android:id="@+id/leftInfoContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/locationContainer"
+            app:layout_constraintTop_toBottomOf="@id/cardAvatar">
+
+            <TextView
+                android:id="@+id/usernameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorAccent"
+                tools:text="JiroxDEV" />
+
+            <TextView
+                android:id="@+id/roleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="13sp"
+                android:textColor="?attr/colorTextHint"
+                tools:text="Estudiante" />
+
+            <TextView
+                android:id="@+id/groupText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="13sp"
+                android:textColor="?attr/colorText"
+                tools:text="Grupo: 12 - 2" />
+
+            <TextView
+                android:id="@+id/roleExtraInfoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="13sp"
+                android:textColor="?attr/colorTextHint"
+                android:visibility="gone"
+                tools:text="Educando: @pupo" />
+        </LinearLayout>
+
+        <!-- Ubicación en la parte inferior derecha (Escuela, Municipio, Provincia) -->
+        <LinearLayout
+            android:id="@+id/locationContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="end"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardAvatar">
+
+            <TextView
+                android:id="@+id/schoolText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:textSize="12sp"
+                android:textColor="?attr/colorText"
+                android:drawablePadding="6dp"
+                app:drawableStartCompat="@drawable/ic_school"
+                app:drawableTint="?attr/colorAccent"
+                tools:text="IPVCE Mártires de Humboldt" />
+
+            <TextView
+                android:id="@+id/municipalityText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:textSize="12sp"
+                android:textColor="?attr/colorTextHint"
+                android:drawablePadding="6dp"
+                app:drawableStartCompat="@drawable/ic_place"
+                app:drawableTint="?attr/colorAccent"
+                tools:text="Artemisa" />
+
+            <TextView
+                android:id="@+id/provinceText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:textSize="12sp"
+                android:textColor="?attr/colorTextHint"
+                android:drawablePadding="6dp"
+                app:drawableStartCompat="@drawable/ic_place"
+                app:drawableTint="?attr/colorAccent"
+                tools:text="Artemisa" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>
-
-

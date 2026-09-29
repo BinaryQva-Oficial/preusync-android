@@ -3,8 +3,8 @@
     ============================================================================
     Proyecto: PreuSync
     Recurso: colors.xml
-    Versión: v2.2.0
-    Descripción: Recurso de colores para la aplicación.
+    Versión: v2.3.0
+    Descripción: Recurso de colores de la aplicación traducido al inglés.
     Autor: JiroxDEV
     Licensed under the GNU Affero General Public License v3
     ============================================================================
@@ -23,18 +23,16 @@
     <color name="colorText">#191C1E</color>
     <color name="colorTextHint">#40484C</color>
     <color name="colorError">#BA1A1A</color>
-    <color name="colorExito">#006B4F</color>
+    <color name="colorSuccess">#006B4F</color>
     <color name="colorWarning">#7F5700</color>
 
     <!-- Onboarding / UI Indicators -->
     <color name="colorInactiveIndicator">#555555</color>
 
-    <!-- Horario Light -->
-    <color name="colorHorarioPrincipal">#BFE9FF</color>
-    <color name="colorHorarioAsignatura">#DCE4E9</color>
-    <color name="colorHorarioLibre">#F1F4F5</color>
-    <color name="colorHorarioResaltadoPrincipal">#006684</color>
-    <color name="colorHorarioResaltadoSecundario">#003544</color>
+    <!-- Schedule Light Colors -->
+    <color name="colorScheduleHeader">#BFE9FF</color>
+    <color name="colorScheduleSubject">#DCE4E9</color>
+    <color name="colorScheduleBreak">#F1F4F5</color>
+    <color name="colorScheduleHighlightHeader">#006684</color>
+    <color name="colorScheduleHighlightCell">#003544</color>
 </resources>
-
-

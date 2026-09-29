@@ -3,50 +3,21 @@
     ============================================================================
     Proyecto: PreuSync
     Layout: fragment_profile.xml
-    Versión: v4.5.0
-    Descripción: Fragmento de perfil que muestra datos personales, estadísticas y publicaciones del autor.
+    Versión: v4.6.0
+    Descripción: Fragmento de perfil que muestra datos personales, estadísticas
+                 y publicaciones del autor.
     Autor: JiroxDEV
     Licensed under the GNU Affero General Public License v3
     ============================================================================
 -->
 
-<!--
-    ============================================================================
-    fragment_profile.xml
-    ============================================================================
-
-    📌 NUEVO DISEÑO CON BARRA DE ENCABEZADO
-    ============================================================================
-
-    🔥 CAMBIOS REALIZADOS:
-      1. Se agregó una barra de encabezado fija en la parte superior con el título
-         "Su cuenta" (como en los otros fragments).
-      2. El RecyclerView ahora se encuentra debajo de la barra de encabezado,
-         ocupando el resto del espacio disponible.
-      3. Se mantiene la estructura con un único RecyclerView (sin NestedScrollView)
-         para evitar conflictos de scroll.
-
-    📌 ESTRUCTURA:
-      ConstraintLayout
-        ├── LinearLayout (barra de encabezado fija)
-        │   └── TextView "Su cuenta"
-        └── SmartSwipeRefreshLayout (contenedor del RecyclerView)
-
-    ✅ VENTAJAS:
-      - Barra de encabezado consistente con el resto de la app.
-      - Scroll suave y sin saltos en el RecyclerView.
-      - Sin conflictos de scroll anidado.
-
-    ============================================================================
--->
-
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/profileLayoutContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="?attr/colorBackground">
 
     <!-- ==================== BARRA DE ENCABEZADO ==================== -->
@@ -59,10 +30,7 @@
         android:paddingBottom="@dimen/padding_8dp"
         android:background="?attr/colorBackground"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/titleText"
@@ -72,9 +40,6 @@
             android:padding="@dimen/padding_8dp"
             android:text="@string/title_your_account"
             android:layout_weight="1" />
-
-        <!-- Botón de configuración en la barra (opcional, ya está en el perfil) -->
-        <!-- Podemos mantenerlo aquí o dejarlo solo en el perfil, por ahora lo dejamos -->
     </LinearLayout>
 
     <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
@@ -82,91 +47,83 @@
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/actionBarLayout">
+        android:layout_weight="1">
 
-        <!-- UN ÚNICO RECYCLERVIEW maneja TODO el contenido del perfil -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/profileRecyclerView"
+        <FrameLayout
+            android:id="@+id/mainContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingTop="@dimen/padding_8dp"
-            android:paddingBottom="@dimen/padding_16dp"
-            android:paddingStart="@dimen/padding_8dp"
-            android:paddingEnd="@dimen/padding_8dp"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:overScrollMode="never" />
+            android:background="?attr/colorBackground">
 
+            <!-- UN ÚNICO RECYCLERVIEW maneja TODO el contenido del perfil -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/profileRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="@dimen/padding_8dp"
+                android:paddingBottom="@dimen/padding_16dp"
+                android:paddingStart="@dimen/padding_8dp"
+                android:paddingEnd="@dimen/padding_8dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:overScrollMode="never" />
+
+            <!-- ==================== LOADER DE PERFIL ==================== -->
+            <LinearLayout
+                android:id="@+id/profileLoader"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.loadingindicator.LoadingIndicator
+                    android:layout_width="@dimen/standard_icon_size_state"
+                    android:layout_height="@dimen/standard_icon_size_state"
+                    app:indicatorSize="@dimen/standard_icon_size_state" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_12dp"
+                    android:text="@string/label_loading"
+                    android:textColor="?attr/colorTextHint"
+                    android:textSize="@dimen/text_size_14sp" />
+            </LinearLayout>
+
+            <!-- ==================== ERROR DE PERFIL ==================== -->
+            <LinearLayout
+                android:id="@+id/profileErrorLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="@dimen/standard_icon_size_state"
+                    android:layout_height="@dimen/standard_icon_size_state"
+                    android:src="@drawable/ic_error_profile" />
+
+                <TextView
+                    android:id="@+id/profileErrorTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/padding_8dp"
+                    android:text="@string/error_loading_data"
+                    android:textSize="@dimen/text_size_20sp"
+                    android:textColor="?attr/colorText" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/profileRetryButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_12dp"
+                    android:text="@string/button_retry"
+                    style="@style/Widget.PreuSync.Button.Global" />
+            </LinearLayout>
+
+        </FrameLayout>
     </binaryqva.educative.preusync.utils.ui.SmartSwipeRefreshLayout>
-
-    <!-- ==================== LOADER DE PERFIL ==================== -->
-    <LinearLayout
-        android:id="@+id/profileLoader"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.loadingindicator.LoadingIndicator
-            android:layout_width="@dimen/standard_icon_size_state"
-            android:layout_height="@dimen/standard_icon_size_state"
-            app:indicatorSize="@dimen/standard_icon_size_state" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_12dp"
-            android:text="@string/label_loading"
-            android:textColor="?attr/colorTextHint"
-            android:textSize="@dimen/text_size_14sp" />
-    </LinearLayout>
-
-    <!-- ==================== ERROR DE PERFIL ==================== -->
-    <LinearLayout
-        android:id="@+id/profileErrorLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:layout_width="@dimen/standard_icon_size_state"
-            android:layout_height="@dimen/standard_icon_size_state"
-            android:src="@drawable/ic_error_profile" />
-
-        <TextView
-            android:id="@+id/profileErrorTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/padding_8dp"
-            android:text="@string/error_loading_data"
-            android:textSize="@dimen/text_size_20sp"
-            android:textColor="?attr/colorText" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/profileRetryButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_12dp"
-            android:text="@string/button_retry"
-            style="@style/Widget.PreuSync.Button.Global" />
-    </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
-
-
+</LinearLayout>

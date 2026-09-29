@@ -2,9 +2,9 @@
 <!--
     ============================================================================
     Proyecto: PreuSync
-    Recurso: colors.xml
-    Versión: v4.5.0
-    Descripción: Recurso de colores para el modo nocturno.
+    Recurso: colors.xml (Night)
+    Versión: v4.6.0
+    Descripción: Recurso de colores para el modo nocturno traducido al inglés.
     Autor: JiroxDEV
     Licensed under the GNU Affero General Public License v3
     ============================================================================
@@ -22,15 +22,13 @@
     <color name="colorText">#E1E2E5</color>
     <color name="colorTextHint">#B4CAD6</color>
     <color name="colorError">#FFB4AB</color>
-    <color name="colorExito">#38E2B6</color>
+    <color name="colorSuccess">#38E2B6</color>
     <color name="colorWarning">#FFBA28</color>
 
-    <!-- Horario Dark -->
-    <color name="colorHorarioPrincipal">#004D63</color>
-    <color name="colorHorarioAsignatura">#003544</color>
-    <color name="colorHorarioLibre">#40484C</color>
-    <color name="colorHorarioResaltadoPrincipal">#66D3FF</color>
-    <color name="colorHorarioResaltadoSecundario">#004D63</color>
+    <!-- Schedule Dark Colors -->
+    <color name="colorScheduleHeader">#004D63</color>
+    <color name="colorScheduleSubject">#003544</color>
+    <color name="colorScheduleBreak">#40484C</color>
+    <color name="colorScheduleHighlightHeader">#66D3FF</color>
+    <color name="colorScheduleHighlightCell">#004D63</color>
 </resources>
-
-

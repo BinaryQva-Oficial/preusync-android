@@ -97,20 +97,38 @@ public class AuthManager {
         authRepository.getProfile(new Callback<ApiResponse<Profile>>() {
             @Override
             public void onResponse(Call<ApiResponse<Profile>> call, Response<ApiResponse<Profile>> response) {
-                isVerifying = false;
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    isVerifying = false;
                     AppLogger.d(TAG, "verifySession: Sesión confirmada por la API");
                     callback.onSessionValid();
+                } else if (response.code() == 401 || response.code() == 403 || !hasValidToken()) {
+                    AppLogger.w(TAG, "verifySession: Token rechazado o expirado en servidor. Intentando renovación silenciosa...");
+                    refreshSession(new SessionCallback() {
+                        @Override
+                        public void onSessionValid() {
+                            isVerifying = false;
+                            AppLogger.d(TAG, "verifySession: Token renovado exitosamente con refresh token");
+                            callback.onSessionValid();
+                        }
+
+                        @Override
+                        public void onSessionInvalid() {
+                            isVerifying = false;
+                            AppLogger.w(TAG, "verifySession: Renovación fallida, cerrando sesión");
+                            callback.onSessionInvalid();
+                        }
+                    });
                 } else {
-                    AppLogger.w(TAG, "verifySession: Token rechazado por el servidor");
-                    callback.onSessionInvalid();
+                    isVerifying = false;
+                    AppLogger.w(TAG, "verifySession: Servidor no respondió con perfil pero manteniendo sesión offline");
+                    callback.onSessionValid();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Profile>> call, Throwable t) {
                 isVerifying = false;
-                AppLogger.e(TAG, "verifySession: Error de conectividad: " + t.getMessage(), null);
+                AppLogger.e(TAG, "verifySession: Error de conectividad (" + t.getMessage() + "), manteniendo sesión offline", null);
                 callback.onSessionValid();
             }
         });

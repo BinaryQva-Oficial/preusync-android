@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: EphemeridesFragment.java
- * Versión: v7.0.0
- * Descripción: Fragmento de efemérides. Implementa el patrón BaseFragment y 
- *              soporte Room.
+ * Versión: v8.0.0
+ * Descripción: Fragmento de efemérides. Herencia de BaseFragment con
+ *              gestión unificada de estados y soporte Room.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -41,11 +41,6 @@ import binaryqva.educative.preusync.utils.theme.ThemeManager;
 
 public class EphemeridesFragment extends BaseFragment {
 
-    private static final int STATE_LOADING = 0;
-    private static final int STATE_EMPTY = 1;
-    private static final int STATE_ERROR = 2;
-    private static final int STATE_CONTENT = 3;
-
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private TextView dateTextView;
@@ -71,7 +66,7 @@ public class EphemeridesFragment extends BaseFragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         if (swipeRefreshLayout instanceof SmartSwipeRefreshLayout) {
-            ((SmartSwipeRefreshLayout) swipeRefreshLayout).setTargetRecyclerView(recyclerView);
+            ((SmartSwipeRefreshLayout) swipeRefreshLayout).setTargetScrollableView(recyclerView);
         }
         adapter = new EphemeridesAdapter();
         recyclerView.setAdapter(adapter);
@@ -86,20 +81,28 @@ public class EphemeridesFragment extends BaseFragment {
     }
 
     @Override
+    protected void onRetry() {
+        if (ephemeridesViewModel != null) ephemeridesViewModel.refresh();
+    }
+
+    @Override
     protected void setupObservers() {
         ephemeridesViewModel.getEphemerisList().observe(getViewLifecycleOwner(), list -> {
-            if (list != null) {
-                adapter.setData(new ArrayList<>(list));
-                adapter.setState(list.isEmpty() ? STATE_EMPTY : STATE_CONTENT);
-            }
+            boolean hasData = list != null && !list.isEmpty();
+            adapter.setData(list != null ? list : new ArrayList<>());
+            updateUiState(hasData ? STATE_CONTENT : STATE_EMPTY, hasData);
             if (swipeRefreshHelper != null) swipeRefreshHelper.finishRefresh();
             offlineSnackbarManager.checkAndUpdate();
         });
 
         ephemeridesViewModel.getEphemerisState().observe(getViewLifecycleOwner(), state -> {
             if (state == null) return;
-            if (state == EphemeridesViewModel.STATE_LOADING) adapter.setState(STATE_LOADING);
-            else if (state == EphemeridesViewModel.STATE_ERROR) adapter.setState(STATE_ERROR);
+            boolean hasData = adapter.getItemCount() > 0;
+            int targetState = STATE_CONTENT;
+            if (state == EphemeridesViewModel.STATE_LOADING) targetState = STATE_LOADING;
+            else if (state == EphemeridesViewModel.STATE_EMPTY) targetState = STATE_EMPTY;
+            else if (state == EphemeridesViewModel.STATE_ERROR) targetState = STATE_ERROR;
+            updateUiState(targetState, hasData);
             if (swipeRefreshHelper != null) swipeRefreshHelper.finishRefresh();
         });
 
@@ -122,42 +125,34 @@ public class EphemeridesFragment extends BaseFragment {
         Calendar c = ephemeridesViewModel.getSelectedDate();
         DialogHelper.showDatePickerDialog(getActivity(), getString(R.string.label_select_date),
                 c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.MONTH), (day, month) -> {
-                    adapter.setState(STATE_LOADING);
+                    updateUiState(STATE_LOADING, false);
                     ephemeridesViewModel.setSelectedDate(day, month);
                 });
     }
 
-    private class EphemeridesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static class EphemeridesAdapter extends RecyclerView.Adapter<EphemeridesAdapter.ItemViewHolder> {
         private List<Ephemeris> data = new ArrayList<>();
-        private int state = STATE_LOADING;
 
-        @Override public int getItemCount() { return data.isEmpty() ? 1 : data.size(); }
-        @Override public int getItemViewType(int position) { return data.isEmpty() ? state : 100; }
+        @Override public int getItemCount() { return data != null ? data.size() : 0; }
 
-        @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder h, int p) {
-            if (h instanceof ItemViewHolder) ((ItemViewHolder) h).bind(data.get(p));
+        @Override public void onBindViewHolder(@NonNull ItemViewHolder h, int p) {
+            h.bind(data.get(p));
         }
 
-        @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup pr, int vt) {
+        @NonNull @Override public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup pr, int vt) {
             LayoutInflater inf = LayoutInflater.from(pr.getContext());
-            if (vt == STATE_LOADING) return new LoadingViewHolder(inf.inflate(R.layout.item_loading, pr, false));
-            if (vt == STATE_EMPTY) return new EmptyViewHolder(inf.inflate(R.layout.item_empty_ephemeris, pr, false));
-            if (vt == STATE_ERROR) return new ErrorViewHolder(inf.inflate(R.layout.item_error_ephemeris, pr, false));
             return new ItemViewHolder(inf.inflate(R.layout.item_ephemeris, pr, false));
         }
 
-        void setData(List<Ephemeris> d) { this.data = d; notifyDataSetChanged(); }
-        void setState(int s) { this.state = s; notifyDataSetChanged(); }
+        void setData(List<Ephemeris> d) { this.data = d != null ? d : new ArrayList<>(); notifyDataSetChanged(); }
 
-        class ItemViewHolder extends RecyclerView.ViewHolder {
+        static class ItemViewHolder extends RecyclerView.ViewHolder {
             TextView title, desc;
             ItemViewHolder(View v) { super(v); title = v.findViewById(R.id.heading); desc = v.findViewById(R.id.detailsText); }
-            void bind(Ephemeris e) { title.setText(e.getTitle()); desc.setText(e.getDetails()); }
+            void bind(Ephemeris e) {
+                if (title != null) title.setText(e.getTitle());
+                if (desc != null) desc.setText(e.getDetails());
+            }
         }
-        class LoadingViewHolder extends RecyclerView.ViewHolder { LoadingViewHolder(View v) { super(v); } }
-        class EmptyViewHolder extends RecyclerView.ViewHolder { EmptyViewHolder(View v) { super(v); } }
-        class ErrorViewHolder extends RecyclerView.ViewHolder { ErrorViewHolder(View v) { super(v); } }
     }
 }
-
-

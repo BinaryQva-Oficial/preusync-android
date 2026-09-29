@@ -2,7 +2,7 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: PostsFragment.java
- * Versión: v14.1.2
+ * Versión: v14.2.0
  * Descripción: Fragmento de la comunidad para visualizar e interactuar con 
  *              publicaciones (posts).
  * Autor: JiroxDEV
@@ -13,9 +13,7 @@
 package binaryqva.educative.preusync.ui.fragments;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -53,17 +51,14 @@ public class PostsFragment extends PaginatedFeedFragment<Post> {
         return postsAdapter;
     }
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         homeViewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        super.onViewCreated(view, savedInstanceState);
         postsViewModel = new ViewModelProvider(requireActivity()).get(PostsViewModel.class);
         
         observeViewModel();
         postsViewModel.refresh();
-        return view;
     }
 
     private void observeViewModel() {

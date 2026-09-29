@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: Profile.java
- * Versión: v1.0.0
+ * Versión: v1.1.0
  * Descripción: Modelo detallado del perfil de usuario, incluyendo roles 
- *              académicos e información personal.
+ *              académicos, ubicación e información personal.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -50,6 +50,12 @@ public class Profile {
     @SerializedName("group")
     private String group;
 
+    @SerializedName("province")
+    private String province;
+
+    @SerializedName("municipality")
+    private String municipality;
+
     @SerializedName("tutee")
     private String tutee;
 
@@ -69,8 +75,8 @@ public class Profile {
     public String getSchool() { return school; }
     public String getSchoolId() { return schoolId; }
     public String getGroup() { return group; }
+    public String getProvince() { return province; }
+    public String getMunicipality() { return municipality; }
     public String getTutee() { return tutee; }
     public String getResponsibilities() { return responsibilities; }
 }
-
-

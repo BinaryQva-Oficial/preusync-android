@@ -74,7 +74,7 @@
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:background="@drawable/bg_permission_tag_required"
-                android:textColor="?attr/colorError"
+                android:textColor="?attr/colorOnErrorContainer"
                 android:text="@string/permission_required"
                 android:visibility="gone" />
 
@@ -87,7 +87,7 @@
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:background="@drawable/bg_permission_tag_optional"
-                android:textColor="?attr/colorAccent"
+                android:textColor="?attr/colorOnSecondaryContainer"
                 android:text="@string/permission_optional"
                 android:visibility="gone" />
 

@@ -43,7 +43,8 @@
             android:text="@string/button_previous"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/buttonNext"
+            app:layout_constraintBottom_toBottomOf="@+id/buttonNext"
             tools:visibility="visible" />
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -58,24 +59,24 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
+        <LinearLayout
+            android:id="@+id/stepNavigationLayout"
             android:layout_width="wrap_content"
-            android:layout_height="8dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="@android:color/transparent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:gravity="center"
+            android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/buttonNext"
-            app:tabBackground="@drawable/selector_onboarding_indicator"
-            app:tabGravity="center"
-            app:tabIndicatorHeight="0dp"
-            app:tabMaxWidth="48dp"
-            app:tabMinWidth="24dp"
-            app:tabMode="fixed"
-            app:tabRippleColor="@null"
-            app:tabPaddingStart="0dp"
-            app:tabPaddingEnd="0dp"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonNext"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <View android:id="@+id/onboardingIndicator1" android:layout_width="32dp" android:layout_height="6dp" android:layout_margin="4dp" android:background="@drawable/bg_onboarding_indicator_inactive" />
+            <View android:id="@+id/onboardingIndicator2" android:layout_width="32dp" android:layout_height="6dp" android:layout_margin="4dp" android:background="@drawable/bg_onboarding_indicator_inactive" />
+            <View android:id="@+id/onboardingIndicator3" android:layout_width="32dp" android:layout_height="6dp" android:layout_margin="4dp" android:background="@drawable/bg_onboarding_indicator_inactive" />
+            <View android:id="@+id/onboardingIndicator4" android:layout_width="32dp" android:layout_height="6dp" android:layout_margin="4dp" android:background="@drawable/bg_onboarding_indicator_inactive" />
+            <View android:id="@+id/onboardingIndicator5" android:layout_width="32dp" android:layout_height="6dp" android:layout_margin="4dp" android:background="@drawable/bg_onboarding_indicator_inactive" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

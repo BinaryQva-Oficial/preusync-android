@@ -14,6 +14,8 @@ package binaryqva.educative.preusync.network.retrofit;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import binaryqva.educative.preusync.utils.common.PreferenceConstants;
 import binaryqva.educative.preusync.utils.common.PreferenceManager;
 import okhttp3.Interceptor;
@@ -22,7 +24,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -45,9 +46,9 @@ public class RetrofitClient {
         if (apiService == null) {
             // Configuración de timeouts optimizada para conexiones móviles inestables.
             OkHttpClient.Builder httpClient = new OkHttpClient.Builder()
-                    .connectTimeout(15, TimeUnit.SECONDS)
-                    .readTimeout(25, TimeUnit.SECONDS)
-                    .writeTimeout(25, TimeUnit.SECONDS);
+                    .connectTimeout(25, TimeUnit.SECONDS)
+                    .readTimeout(35, TimeUnit.SECONDS)
+                    .writeTimeout(35, TimeUnit.SECONDS);
 
             // Interceptor para depuración de peticiones HTTP en consola.
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -56,8 +57,9 @@ public class RetrofitClient {
 
             // Interceptor de autenticación: inyecta automáticamente el JWT en cada petición.
             httpClient.addInterceptor(new Interceptor() {
+                @NonNull
                 @Override
-                public Response intercept(Chain chain) throws IOException {
+                public Response intercept(@NonNull Chain chain) throws IOException {
                     Request original = chain.request();
                     PreferenceManager prefs = PreferenceManager.getInstance(context);
                     String token = prefs.getSupabaseAccessToken();

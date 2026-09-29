@@ -14,6 +14,7 @@
     <!-- ==================== APP ==================== -->
     <string name="app_name">PreuSync</string>
     <string name="app_tagline">The all-in-one for pre-university students</string>
+    <string name="title_welcome">Welcome!</string>
 
     <!-- ==================== BOTONES GENÉRICOS ==================== -->
     <string name="button_accept">Accept</string>

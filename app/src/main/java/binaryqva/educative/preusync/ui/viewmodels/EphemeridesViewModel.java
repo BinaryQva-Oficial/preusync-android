@@ -60,6 +60,7 @@ public class EphemeridesViewModel extends AndroidViewModel {
         this.repository = new EphemerisRepository(application);
         this.preferenceManager = PreferenceManager.getInstance(application);
         updateDateUI();
+        loadEphemerides();
     }
 
     public LiveData<List<Ephemeris>> getEphemerisList() { return ephemeridesList; }

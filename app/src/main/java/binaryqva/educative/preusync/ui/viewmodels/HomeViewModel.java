@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: HomeViewModel.java
- * Versión: v10.0.0
- * Descripción: ViewModel central para el inicio. Coordina la carga de múltiples 
- *              fuentes de datos (Noticias, Posts, Efemérides) con soporte Room.
+ * Versión: v10.1.0
+ * Descripción: ViewModel central para el inicio. Coordina la carga de noticias,
+ *              posts, efemérides y turnos con estados visuales robustos.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -34,6 +34,7 @@ import binaryqva.educative.preusync.data.repositories.NewsRepository;
 import binaryqva.educative.preusync.data.repositories.PostRepository;
 import binaryqva.educative.preusync.data.repositories.ScheduleRepository;
 import binaryqva.educative.preusync.data.repositories.VoteRepository;
+import binaryqva.educative.preusync.debug.AppLogger;
 import binaryqva.educative.preusync.network.models.ApiResponse;
 import binaryqva.educative.preusync.network.models.Ephemeris;
 import binaryqva.educative.preusync.network.models.News;
@@ -46,6 +47,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class HomeViewModel extends AndroidViewModel {
+
+    private static final String TAG = "PreuSync_HomeVM";
 
     public static final int STATE_LOADING = 0;
     public static final int STATE_SUCCESS = 1;
@@ -105,7 +108,9 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public void loadHomeData() {
+        AppLogger.d(TAG, "loadHomeData: Cargando datos principales de Home...");
         if (!AppUtils.isConnected(getApplication())) {
+            AppLogger.w(TAG, "loadHomeData: Sin conexión a internet, consultando datos en Room...");
             loadFromRoom();
             return;
         }
@@ -113,9 +118,14 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     private void loadFromRoom() {
-        newsRepository.getLocalNews(data -> { if (data != null && !data.isEmpty()) { newsList.setValue(data); newsState.setValue(STATE_SUCCESS); } });
-        postRepository.getLocalPosts(data -> { if (data != null && !data.isEmpty()) { postsList.setValue(data); postsState.setValue(STATE_SUCCESS); } });
-        // Efemérides y Horario aún en SharedPreferences/CacheManager antiguo hasta completar Fase 4.
+        newsRepository.getLocalNews(data -> {
+            if (data != null && !data.isEmpty()) { newsList.setValue(data); newsState.setValue(STATE_SUCCESS); }
+            else { newsState.setValue(STATE_EMPTY); }
+        });
+        postRepository.getLocalPosts(data -> {
+            if (data != null && !data.isEmpty()) { syncVotesAndCounts(data); postsList.setValue(data); postsState.setValue(STATE_SUCCESS); }
+            else { postsState.setValue(STATE_EMPTY); }
+        });
     }
 
     private void loadTopNews() {
@@ -124,10 +134,34 @@ public class HomeViewModel extends AndroidViewModel {
             @Override public void onResponse(@NonNull Call<ApiResponse<List<News>>> call, @NonNull Response<ApiResponse<List<News>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<News> data = response.body().getData();
-                    newsList.setValue(data); newsState.setValue(data.isEmpty() ? STATE_EMPTY : STATE_SUCCESS);
-                } else newsState.setValue(STATE_ERROR);
+                    List<News> items = data != null ? data : new ArrayList<>();
+                    newsList.setValue(items);
+                    newsState.setValue(items.isEmpty() ? STATE_EMPTY : STATE_SUCCESS);
+                    AppLogger.d(TAG, "loadTopNews: " + items.size() + " noticias. Estado: " + (items.isEmpty() ? "EMPTY" : "SUCCESS"));
+                } else {
+                    AppLogger.w(TAG, "loadTopNews: HTTP " + response.code() + ", buscando en Room local...");
+                    newsRepository.getLocalNews(localData -> {
+                        if (localData != null && !localData.isEmpty()) {
+                            newsList.setValue(localData);
+                            newsState.setValue(STATE_SUCCESS);
+                        } else {
+                            newsState.setValue(STATE_EMPTY);
+                        }
+                    });
+                }
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse<List<News>>> call, @NonNull Throwable t) { newsState.setValue(STATE_ERROR); }
+
+            @Override public void onFailure(@NonNull Call<ApiResponse<List<News>>> call, @NonNull Throwable t) {
+                AppLogger.e(TAG, "loadTopNews onFailure: " + t.getMessage(), t);
+                newsRepository.getLocalNews(localData -> {
+                    if (localData != null && !localData.isEmpty()) {
+                        newsList.setValue(localData);
+                        newsState.setValue(STATE_SUCCESS);
+                    } else {
+                        newsState.setValue(STATE_EMPTY);
+                    }
+                });
+            }
         });
     }
 
@@ -137,18 +171,46 @@ public class HomeViewModel extends AndroidViewModel {
             @Override public void onResponse(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Response<ApiResponse<List<Post>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Post> data = response.body().getData();
-                    syncVotesAndCounts(data);
-                    postsList.setValue(data); postsState.setValue(data.isEmpty() ? STATE_EMPTY : STATE_SUCCESS);
-                } else postsState.setValue(STATE_ERROR);
+                    List<Post> items = data != null ? data : new ArrayList<>();
+                    syncVotesAndCounts(items);
+                    postsList.setValue(items);
+                    postsState.setValue(items.isEmpty() ? STATE_EMPTY : STATE_SUCCESS);
+                    AppLogger.d(TAG, "loadTopPosts: " + items.size() + " posts. Estado: " + (items.isEmpty() ? "EMPTY" : "SUCCESS"));
+                } else {
+                    AppLogger.w(TAG, "loadTopPosts: HTTP " + response.code() + ", buscando en Room local...");
+                    postRepository.getLocalPosts(localData -> {
+                        if (localData != null && !localData.isEmpty()) {
+                            syncVotesAndCounts(localData);
+                            postsList.setValue(localData);
+                            postsState.setValue(STATE_SUCCESS);
+                        } else {
+                            postsState.setValue(STATE_EMPTY);
+                        }
+                    });
+                }
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Throwable t) { postsState.setValue(STATE_ERROR); }
+
+            @Override public void onFailure(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Throwable t) {
+                AppLogger.e(TAG, "loadTopPosts onFailure: " + t.getMessage(), t);
+                postRepository.getLocalPosts(localData -> {
+                    if (localData != null && !localData.isEmpty()) {
+                        syncVotesAndCounts(localData);
+                        postsList.setValue(localData);
+                        postsState.setValue(STATE_SUCCESS);
+                    } else {
+                        postsState.setValue(STATE_EMPTY);
+                    }
+                });
+            }
         });
     }
 
     private void syncVotesAndCounts(List<Post> posts) {
+        if (posts == null || posts.isEmpty()) return;
         Map<String, Integer> votes = new HashMap<>();
         Map<String, VoteRepository.PostCounts> counts = new HashMap<>();
         for (Post p : posts) {
+            if (p == null || p.getId() == null) continue;
             int voteVal = 0;
             if ("up".equals(p.getUserVote())) voteVal = 1;
             else if ("down".equals(p.getUserVote())) voteVal = 2;
@@ -168,11 +230,16 @@ public class HomeViewModel extends AndroidViewModel {
             @Override public void onResponse(@NonNull Call<ApiResponse<List<Ephemeris>>> call, @NonNull Response<ApiResponse<List<Ephemeris>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Ephemeris> data = response.body().getData();
-                    if (!data.isEmpty()) { ephemerisData.setValue(data.get(0)); ephemerisState.setValue(STATE_SUCCESS); }
-                    else ephemerisState.setValue(STATE_EMPTY);
-                } else ephemerisState.setValue(STATE_ERROR);
+                    if (data != null && !data.isEmpty()) {
+                        ephemerisData.setValue(data.get(0));
+                        ephemerisState.setValue(STATE_SUCCESS);
+                    } else {
+                        ephemerisData.setValue(null);
+                        ephemerisState.setValue(STATE_EMPTY);
+                    }
+                } else ephemerisState.setValue(STATE_EMPTY);
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse<List<Ephemeris>>> call, @NonNull Throwable t) { ephemerisState.setValue(STATE_ERROR); }
+            @Override public void onFailure(@NonNull Call<ApiResponse<List<Ephemeris>>> call, @NonNull Throwable t) { ephemerisState.setValue(STATE_EMPTY); }
         });
     }
 
@@ -185,9 +252,9 @@ public class HomeViewModel extends AndroidViewModel {
             @Override public void onResponse(@NonNull Call<ApiResponse<List<Schedule>>> call, @NonNull Response<ApiResponse<List<Schedule>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     processScheduleData(response.body().getData());
-                } else shiftState.setValue(STATE_ERROR);
+                } else shiftState.setValue(STATE_EMPTY);
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse<List<Schedule>>> call, @NonNull Throwable t) { shiftState.setValue(STATE_ERROR); }
+            @Override public void onFailure(@NonNull Call<ApiResponse<List<Schedule>>> call, @NonNull Throwable t) { shiftState.setValue(STATE_EMPTY); }
         });
     }
 

@@ -2,8 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: ScheduleFragment.java
- * Versión: v8.0.0
- * Descripción: Fragmento de horario escolar. Soporta modelos tipados para grupos.
+ * Versión: v13.0.0
+ * Descripción: Fragmento de horario escolar que muestra la tabla oficial
+ *              de 16 turnos (5 mañana, 3 tarde, recesos, almuerzo) según la ODS.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -12,6 +13,7 @@
 package binaryqva.educative.preusync.ui.fragments;
 
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import binaryqva.educative.preusync.R;
+import binaryqva.educative.preusync.debug.AppLogger;
 import binaryqva.educative.preusync.network.models.SchoolGroup;
 import binaryqva.educative.preusync.ui.viewmodels.ScheduleViewModel;
 import binaryqva.educative.preusync.utils.ui.SmartSwipeRefreshLayout;
@@ -44,6 +47,23 @@ import binaryqva.educative.preusync.utils.ui.SwipeRefreshHelper;
 import binaryqva.educative.preusync.utils.theme.ThemeManager;
 
 public class ScheduleFragment extends BaseFragment {
+
+    private static final String TAG = "PreuSync_ScheduleFragment";
+    private static final int DAYS = 5;
+    private static final int ROWS = 16;
+
+    private static final String[] TURN_LABELS = {
+        "CI", "Turno 1", "Descanso", "Turno 2", "Descanso", "Turno 3", "Merienda",
+        "Turno 4", "Descanso", "Turno 5", "Almuerzo", "Turno 6", "Descanso",
+        "Turno 7", "Descanso", "Turno 8"
+    };
+
+    private static final String[] OFFICIAL_TIME_RANGES = {
+        "07:50 - 08:00", "08:00 - 08:45", "08:45 - 08:50", "08:50 - 09:35",
+        "09:35 - 09:40", "09:40 - 10:25", "10:25 - 10:50", "10:50 - 11:35",
+        "11:35 - 11:40", "11:40 - 12:25", "12:25 - 13:25", "13:25 - 14:10",
+        "14:10 - 14:15", "14:15 - 15:00", "15:00 - 15:05", "15:05 - 15:50"
+    };
 
     private ViewFlipper viewFlipper;
     private TableLayout scheduleTable;
@@ -54,19 +74,10 @@ public class ScheduleFragment extends BaseFragment {
 
     private SwipeRefreshHelper swipeRefreshHelper;
     private ScheduleViewModel viewModel;
-
-    private static final int ROWS = 15;
-    private static final int DAYS = 5;
-    private static final int COLUMNS = 7;
-    private static final String[] DAY_LETTERS = {"L", "M", "X", "J", "V"};
-    private static final String[] TURN_LABELS = {"1", "5M", "2", "5M", "3", "RC", "4", "5M", "5", "AZ", "6", "5M", "7", "5M", "8"};
-    
-    private String[] currentTimeRanges;
+    private TextView[][] cells = new TextView[ROWS][DAYS + 2];
     private Typeface monoTypeface;
-    private final TextView[][] cells = new TextView[ROWS][COLUMNS];
-    private final TextView[] headerDayViews = new TextView[DAYS];
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler autoUpdateHandler = new Handler(Looper.getMainLooper());
     private Runnable updateHighlightRunnable;
 
     @Override protected int getLayoutResId() { return R.layout.fragment_schedule; }
@@ -88,10 +99,18 @@ public class ScheduleFragment extends BaseFragment {
         swipeRefreshHelper = new SwipeRefreshHelper(swipeRefreshLayout, colorAccent);
         swipeRefreshHelper.setOnRefreshListener(() -> viewModel.refreshAll());
 
-        monoTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_mono);
+        try {
+            monoTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_mono);
+        } catch (Exception e) {
+            AppLogger.w(TAG, "No se pudo cargar la fuente roboto_mono; usando Typeface.MONOSPACE de respaldo");
+            monoTypeface = Typeface.MONOSPACE;
+        }
         if (monoTypeface == null) monoTypeface = Typeface.MONOSPACE;
 
-        retryButton.setOnClickListener(v -> viewModel.refreshAll());
+        View.OnClickListener retryListener = v -> viewModel.refreshAll();
+        if (retryButton != null) retryButton.setOnClickListener(retryListener);
+        if (view.findViewById(R.id.errorLayout) != null) view.findViewById(R.id.errorLayout).setOnClickListener(retryListener);
+        if (view.findViewById(R.id.emptyLayout) != null) view.findViewById(R.id.emptyLayout).setOnClickListener(retryListener);
 
         viewModel = new ViewModelProvider(requireActivity()).get(ScheduleViewModel.class);
         viewModel.loadGroups();
@@ -122,21 +141,27 @@ public class ScheduleFragment extends BaseFragment {
     }
 
     private void updateUiState(int state) {
-        if (viewFlipper != null) viewFlipper.setDisplayedChild(state);
-        if (swipeRefreshHelper != null) swipeRefreshHelper.finishRefresh();
-        groupTextInputLayout.setVisibility(state == ScheduleViewModel.STATE_SUCCESS || state == ScheduleViewModel.STATE_EMPTY ? View.VISIBLE : View.GONE);
+        if (viewFlipper != null) {
+            int childIndex = 0; // Loading
+            if (state == ScheduleViewModel.STATE_SUCCESS) childIndex = 1; // Content (scrollView)
+            else if (state == ScheduleViewModel.STATE_EMPTY) childIndex = 2; // Empty
+            else if (state == ScheduleViewModel.STATE_ERROR) childIndex = 3; // Error
+            viewFlipper.setDisplayedChild(childIndex);
+        }
+        if (swipeRefreshHelper != null && state != ScheduleViewModel.STATE_LOADING) {
+            swipeRefreshHelper.finishRefresh();
+        }
+        if (groupTextInputLayout != null) {
+            groupTextInputLayout.setVisibility(state == ScheduleViewModel.STATE_SUCCESS || state == ScheduleViewModel.STATE_EMPTY ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void displaySchedule() {
         String group = viewModel.getCurrentGroup().getValue();
-        Map<String, Boolean> typeMap = viewModel.getScheduleTypeByGroup().getValue();
-        if (group == null || typeMap == null) return;
+        if (group == null) return;
 
-        boolean isContinuous = typeMap.containsKey(group) && typeMap.get(group);
-        String[][] matrix = isContinuous ? viewModel.getContinuousScheduleMap().getValue().get(group) : viewModel.getNormalScheduleMap().getValue().get(group);
-        
-        currentTimeRanges = isContinuous ? new String[]{"08:00-08:45", "08:45-08:50", "08:50-09:35", "09:35-09:40", "09:40-10:25", "10:25-10:45", "10:45-11:30", "11:30-11:35", "11:35-12:20", "12:20-13:20", "13:20-14:05", "14:05-14:10", "14:10-14:55", "14:55-15:00", "15:00-15:45"} 
-                                         : new String[]{"07:40-08:25", "08:25-08:30", "08:30-09:15", "09:15-09:20", "09:20-10:05", "10:05-10:25", "10:25-11:10", "11:10-11:15", "11:15-12:00", "12:00-13:00", "13:00-13:45", "13:45-13:50", "13:50-14:35", "14:40-15:25", "14:40-15:25"};
+        Map<String, String[][]> map = viewModel.getNormalScheduleMap().getValue();
+        String[][] matrix = map != null ? map.get(group) : null;
 
         if (matrix == null) return;
         renderTable(matrix);
@@ -145,9 +170,9 @@ public class ScheduleFragment extends BaseFragment {
     }
 
     private void renderTable(String[][] matrix) {
-        int sCol = ThemeManager.getThemeColor(requireContext(), R.attr.colorHorarioAsignatura);
-        int fCol = ThemeManager.getThemeColor(requireContext(), R.attr.colorHorarioLibre);
-        int hCol = ThemeManager.getThemeColor(requireContext(), R.attr.colorHorarioPrincipal);
+        int sCol = ThemeManager.getThemeColor(requireContext(), R.attr.colorScheduleSubject);
+        int fCol = ThemeManager.getThemeColor(requireContext(), R.attr.colorScheduleBreak);
+        int hCol = ThemeManager.getThemeColor(requireContext(), R.attr.colorScheduleHeader);
         int tCol = ThemeManager.getThemeColor(requireContext(), R.attr.colorText);
 
         scheduleTable.removeAllViews();
@@ -155,14 +180,25 @@ public class ScheduleFragment extends BaseFragment {
 
         for (int r = 0; r < ROWS; r++) {
             TableRow row = new TableRow(requireContext());
-            boolean isClass = (r % 2 == 0);
+            boolean isBreak = (r == 0 || r == 2 || r == 4 || r == 6 || r == 8 || r == 10 || r == 12 || r == 14);
+            
             cells[r][0] = createCell(TURN_LABELS[r], hCol, tCol, true, false);
-            cells[r][1] = createCell(currentTimeRanges[r], hCol, tCol, true, false);
-            row.addView(cells[r][0]); row.addView(cells[r][1]);
+            cells[r][1] = createCell(OFFICIAL_TIME_RANGES[r], hCol, tCol, true, false);
+            row.addView(cells[r][0]);
+            row.addView(cells[r][1]);
+
             for (int d = 0; d < DAYS; d++) {
-                String sub = matrix[r][d];
-                int bg = !isClass ? fCol : (sub == null || sub.isEmpty() || sub.equals("//") ? fCol : sCol);
-                cells[r][d + 2] = createCell(!isClass ? "-" : (sub == null || sub.isEmpty() ? "//" : sub), bg, tCol, false, true);
+                String sub = (matrix != null && r < matrix.length && d < matrix[r].length) ? matrix[r][d] : "";
+                if (sub == null) sub = "";
+                
+                int bg = sCol;
+                if (sub.equals("-") || sub.equals("—") || sub.equals("///") || isBreak) {
+                    bg = fCol;
+                } else if (sub.equals("?") || sub.isEmpty()) {
+                    bg = fCol;
+                }
+
+                cells[r][d + 2] = createCell(sub.isEmpty() ? "?" : sub, bg, tCol, false, true);
                 row.addView(cells[r][d + 2]);
             }
             scheduleTable.addView(row);
@@ -173,65 +209,81 @@ public class ScheduleFragment extends BaseFragment {
         TableRow hRow = new TableRow(requireContext());
         hRow.addView(createCell(getString(R.string.label_shift), bg, text, true, false));
         hRow.addView(createCell(getString(R.string.label_time), bg, text, true, false));
-        for (int i = 0; i < DAYS; i++) {
-            headerDayViews[i] = createCell(DAY_LETTERS[i], bg, text, true, true);
-            hRow.addView(headerDayViews[i]);
-        }
+        String[] days = {"Lunes", "Martes", "Miércoles", "Jueves", "Viernes"};
+        for (String d : days) hRow.addView(createCell(d, bg, text, true, false));
         scheduleTable.addView(hRow);
     }
 
-    private TextView createCell(String txt, int bg, int text, boolean bold, boolean weight) {
+    private TextView createCell(String text, int bg, int textColor, boolean bold, boolean center) {
         TextView tv = new TextView(requireContext());
-        tv.setText(txt); tv.setGravity(Gravity.CENTER); tv.setBackgroundColor(bg); tv.setTextColor(text);
+        tv.setText(text);
+        tv.setTextSize(12);
+        tv.setPadding(16, 16, 16, 16);
+        tv.setBackgroundColor(bg);
+        tv.setTextColor(textColor);
+        tv.setGravity(center ? Gravity.CENTER : Gravity.CENTER_VERTICAL);
         tv.setTypeface(monoTypeface, bold ? Typeface.BOLD : Typeface.NORMAL);
-        int p = (int) (4 * getResources().getDisplayMetrics().density); tv.setPadding(p, p, p, p);
-        tv.setLayoutParams(new TableRow.LayoutParams(weight ? 0 : TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT, weight ? 1 : 0));
         return tv;
+    }
+
+    private void applyHighlight() {
+        if (OFFICIAL_TIME_RANGES == null) return;
+        Calendar now = Calendar.getInstance();
+        int day = now.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
+        if (day < 0 || day >= DAYS) return;
+
+        int nowMin = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+        int activeRow = -1;
+
+        for (int r = 0; r < ROWS; r++) {
+            String[] parts = OFFICIAL_TIME_RANGES[r].split("-");
+            if (parts.length == 2) {
+                int start = parseMin(parts[0].trim());
+                int end = parseMin(parts[1].trim());
+                if (nowMin >= start && nowMin < end) { activeRow = r; break; }
+            }
+        }
+
+        if (activeRow != -1 && activeRow < ROWS) {
+            int hPrim = ThemeManager.getThemeColor(requireContext(), R.attr.colorScheduleHighlightHeader);
+            int hSec = ThemeManager.getThemeColor(requireContext(), R.attr.colorScheduleHighlightCell);
+            if (cells[activeRow][0] != null) cells[activeRow][0].setBackgroundColor(hPrim);
+            if (cells[activeRow][1] != null) cells[activeRow][1].setBackgroundColor(hPrim);
+            if (cells[activeRow][day + 2] != null) cells[activeRow][day + 2].setBackgroundColor(hSec);
+        }
+    }
+
+    private int parseMin(String time) {
+        String[] p = time.split(":");
+        return Integer.parseInt(p[0]) * 60 + Integer.parseInt(p[1]);
     }
 
     private void startPeriodicUpdate() {
         stopPeriodicUpdate();
-        updateHighlightRunnable = () -> {
-            if (isAdded()) { applyHighlight(); handler.postDelayed(updateHighlightRunnable, 60000); }
-        };
-        handler.postDelayed(updateHighlightRunnable, (60 - Calendar.getInstance().get(Calendar.SECOND)) * 1000L);
-    }
-
-    private void stopPeriodicUpdate() { if (updateHighlightRunnable != null) handler.removeCallbacks(updateHighlightRunnable); }
-
-    private void applyHighlight() {
-        int r = getCurrentRow(), c = getCurrentColumn();
-        int sH = ThemeManager.getThemeColor(requireContext(), R.attr.colorHorarioResaltadoSecundario);
-        int pH = ThemeManager.getThemeColor(requireContext(), R.attr.colorHorarioResaltadoPrincipal);
-        int bg = ThemeManager.getThemeColor(requireContext(), R.attr.colorBackground);
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLUMNS; j++) {
-                if (cells[i][j] == null) continue;
-                if (i == r || j == c) cells[i][j].setBackgroundColor(sH);
-                if (i == r && j == c) { cells[i][j].setBackgroundColor(pH); cells[i][j].setTextColor(bg); }
+        updateHighlightRunnable = new Runnable() {
+            @Override
+            public void run() {
+                applyHighlight();
+                autoUpdateHandler.postDelayed(this, 60000);
             }
-        }
+        };
+        autoUpdateHandler.postDelayed(updateHighlightRunnable, 60000);
     }
 
-    private int getCurrentRow() {
-        int now = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 60 + Calendar.getInstance().get(Calendar.MINUTE);
-        for (int i = 0; i < currentTimeRanges.length; i++) {
-            String[] p = currentTimeRanges[i].split("-");
-            if (now >= toMin(p[0]) && now < toMin(p[1])) return i;
-        }
-        return -1;
+    private void stopPeriodicUpdate() {
+        if (updateHighlightRunnable != null) autoUpdateHandler.removeCallbacks(updateHighlightRunnable);
     }
 
-    private int getCurrentColumn() {
-        switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
-            case Calendar.MONDAY: return 2; case Calendar.TUESDAY: return 3;
-            case Calendar.WEDNESDAY: return 4; case Calendar.THURSDAY: return 5;
-            case Calendar.FRIDAY: return 6; default: return -1;
-        }
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopPeriodicUpdate();
     }
 
-    private int toMin(String t) { String[] p = t.split(":"); return Integer.parseInt(p[0]) * 60 + Integer.parseInt(p[1]); }
-
-    @Override public void onResume() { super.onResume(); }
-    @Override public void onPause() { super.onPause(); stopPeriodicUpdate(); }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        stopPeriodicUpdate();
+        if (swipeRefreshHelper != null) swipeRefreshHelper.cleanup();
+    }
 }

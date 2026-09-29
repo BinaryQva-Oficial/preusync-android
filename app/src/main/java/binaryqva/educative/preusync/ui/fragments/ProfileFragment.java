@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: ProfileFragment.java
- * Versión: v8.7.0
- * Descripción: Fragmento de perfil que muestra datos personales, estadísticas 
- *              y publicaciones del autor.
+ * Versión: v9.1.0
+ * Descripción: Fragmento de perfil con gestión unificada de estados heredada
+ *              de BaseFragment (Cargando, Contenido, Error, Vacío).
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -15,19 +15,12 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,7 +37,6 @@ import binaryqva.educative.preusync.ui.activities.SettingsActivity;
 import binaryqva.educative.preusync.ui.adapters.ProfileAdapter;
 import binaryqva.educative.preusync.ui.helpers.ProfileEditorHelper;
 import binaryqva.educative.preusync.ui.viewmodels.ProfileViewModel;
-import binaryqva.educative.preusync.utils.common.AppUtils;
 import binaryqva.educative.preusync.utils.common.CacheManager;
 import binaryqva.educative.preusync.utils.common.DialogHelper;
 import binaryqva.educative.preusync.utils.common.FilePickerHelper;
@@ -55,13 +47,10 @@ import binaryqva.educative.preusync.utils.ui.SmartSwipeRefreshLayout;
 import binaryqva.educative.preusync.utils.ui.SwipeRefreshHelper;
 import binaryqva.educative.preusync.utils.theme.ThemeManager;
 
-public class ProfileFragment extends Fragment {
-
-    private static final String TAG = "PreuSync_ProfileFragment";
+public class ProfileFragment extends BaseFragment {
 
     private SmartSwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView profileRecyclerView;
-    private LinearLayout profileLoader, profileErrorLayout;
     private TextView profileErrorText;
     private MaterialButton profileRetryButton;
 
@@ -75,19 +64,18 @@ public class ProfileFragment extends Fragment {
     private ProfileViewModel profileViewModel;
 
     private String currentUserId;
-    private boolean profileLoaded = false;
 
-    @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+    protected int getLayoutResId() {
+        return R.layout.fragment_profile;
+    }
+
+    @Override
+    protected void setupViews(View view) {
         int colorAccent = ThemeManager.getThemeColor(requireContext(), R.attr.colorAccent);
 
         profileRecyclerView = view.findViewById(R.id.profileRecyclerView);
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
-        profileLoader = view.findViewById(R.id.profileLoader);
-        profileErrorLayout = view.findViewById(R.id.profileErrorLayout);
         profileErrorText = view.findViewById(R.id.profileErrorTextView);
         profileRetryButton = view.findViewById(R.id.profileRetryButton);
 
@@ -109,11 +97,12 @@ public class ProfileFragment extends Fragment {
         editProfileHelper = new ProfileEditorHelper(requireActivity(), profileViewModel, filePickerHelper);
 
         setupRecyclerView();
-        observeViewModel();
-        loadUserData();
         checkStoragePermissions();
+    }
 
-        return view;
+    @Override
+    protected void onRetry() {
+        onRefresh();
     }
 
     private void setupRecyclerView() {
@@ -153,18 +142,26 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    private void observeViewModel() {
+    @Override
+    protected void setupObservers() {
         profileViewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
-            if (loading) profileLoader.setVisibility(View.VISIBLE);
-            else { profileLoader.setVisibility(View.GONE); if (swipeRefreshHelper != null) swipeRefreshHelper.finishRefresh(); }
+            boolean hasData = profileViewModel.getUserData().getValue() != null;
+            updateUiState(loading ? STATE_LOADING : STATE_CONTENT, hasData);
+            if (!loading && swipeRefreshHelper != null) swipeRefreshHelper.finishRefresh();
         });
 
         profileViewModel.getUserData().observe(getViewLifecycleOwner(), data -> {
             if (data != null) {
                 profileAdapter.setProfileData(data);
-                profileRecyclerView.setVisibility(View.VISIBLE);
-                profileErrorLayout.setVisibility(View.GONE);
-                profileLoaded = true;
+                updateUiState(STATE_CONTENT, true);
+            }
+        });
+
+        profileViewModel.getIsError().observe(getViewLifecycleOwner(), isErr -> {
+            if (Boolean.TRUE.equals(isErr)) {
+                boolean hasData = profileViewModel.getUserData().getValue() != null;
+                updateUiState(STATE_ERROR, hasData);
+                if (swipeRefreshHelper != null) swipeRefreshHelper.finishRefresh();
             }
         });
 
@@ -180,6 +177,9 @@ public class ProfileFragment extends Fragment {
                 requireActivity().finish();
             }
         });
+
+        // Disparo de carga con observadores ya registrados
+        loadUserData();
     }
 
     private void loadUserData() {
@@ -209,5 +209,3 @@ public class ProfileFragment extends Fragment {
         }
     }
 }
-
-

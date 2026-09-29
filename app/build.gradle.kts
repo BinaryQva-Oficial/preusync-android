@@ -29,8 +29,8 @@ android {
         applicationId = "binaryqva.educative.preusync"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2709
-        versionName = "0.99.99"
+        versionCode = 2750
+        versionName = "0.99.110"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionNameSuffix = "-Beta"
@@ -53,6 +53,7 @@ android {
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.androidx.activity)

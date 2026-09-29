@@ -13,8 +13,11 @@ package binaryqva.educative.preusync.data.repositories;
 
 import android.content.Context;
 
+import java.util.List;
+
 import binaryqva.educative.preusync.network.models.ApiResponse;
 import binaryqva.educative.preusync.network.models.AuthResponse;
+import binaryqva.educative.preusync.network.models.Post;
 import binaryqva.educative.preusync.network.models.Profile;
 import binaryqva.educative.preusync.network.requests.LoginRequest;
 import binaryqva.educative.preusync.network.requests.RefreshSessionRequest;
@@ -50,6 +53,10 @@ public class AuthRepository {
 
     public void getProfile(Callback<ApiResponse<Profile>> callback) {
         apiService.getProfile().enqueue(callback);
+    }
+
+    public void getUserPosts(int start, int count, Callback<ApiResponse<List<Post>>> callback) {
+        apiService.getUserPosts(start, count).enqueue(callback);
     }
 
     public void updateProfile(UpdateProfileRequest request, Callback<ApiResponse<Profile>> callback) {

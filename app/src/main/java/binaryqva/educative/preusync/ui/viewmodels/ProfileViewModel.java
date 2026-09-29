@@ -2,8 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Archivo: ProfileViewModel.java
- * Versión: v6.0.8
- * Descripción: ViewModel para perfil refactorizado para repositorios.
+ * Versión: v6.1.0
+ * Descripción: ViewModel para perfil de usuario y sus publicaciones personales,
+ *              con soporte para caché Room/SENSITIVE y logs estratégicos.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -18,15 +19,13 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.gson.reflect.TypeToken;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import binaryqva.educative.preusync.data.repositories.AuthRepository;
 import binaryqva.educative.preusync.data.repositories.PostRepository;
+import binaryqva.educative.preusync.debug.AppLogger;
 import binaryqva.educative.preusync.network.models.ApiResponse;
 import binaryqva.educative.preusync.network.models.AuthResponse;
 import binaryqva.educative.preusync.network.models.Post;
@@ -42,6 +41,7 @@ import retrofit2.Response;
 
 public class ProfileViewModel extends AndroidViewModel {
 
+    private static final String TAG = "PreuSync_ProfileVM";
     private static final int PAGE_SIZE = 10;
     private static final String CACHE_KEY_PROFILE = "profile_data";
 
@@ -62,7 +62,6 @@ public class ProfileViewModel extends AndroidViewModel {
     private final CacheManager cacheManager;
 
     private int currentPage = 0;
-    private boolean isLoadingMoreInternal = false;
 
     public ProfileViewModel(@NonNull Application application) {
         super(application);
@@ -83,25 +82,63 @@ public class ProfileViewModel extends AndroidViewModel {
     public LiveData<Long> getTotalLikes() { return totalLikes; }
 
     public void loadUserData() {
+        AppLogger.d(TAG, "loadUserData: Iniciando carga de datos del perfil...");
         isLoading.setValue(true);
+        isError.setValue(false);
+
         if (!AppUtils.isConnected(getApplication())) {
-            if (!loadProfileFromCache()) { isError.setValue(true); errorCode.setValue("network"); }
-            isLoading.setValue(false); return;
+            AppLogger.w(TAG, "loadUserData: Sin conexión a internet, probando caché local...");
+            if (!loadProfileFromCache()) {
+                isError.setValue(true);
+                errorCode.setValue("Sin conexión");
+            }
+            isLoading.setValue(false);
+            return;
         }
 
         authRepository.getProfile(new Callback<ApiResponse<Profile>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Profile>> call, @NonNull Response<ApiResponse<Profile>> response) {
                 isLoading.setValue(false);
+                AppLogger.d(TAG, "getProfile onResponse: code=" + response.code() + ", isSuccessful=" + response.isSuccessful());
+
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Profile data = response.body().getData();
+                    if (data == null) {
+                        AppLogger.w(TAG, "getProfile: Respuesta exitosa pero data es null. Probando caché...");
+                        if (!loadProfileFromCache()) {
+                            isError.setValue(true);
+                            errorCode.setValue("Perfil no disponible");
+                        }
+                        return;
+                    }
+                    AppLogger.d(TAG, "getProfile: Perfil recibido exitosamente para: " + data.getUsername());
                     userData.setValue(data);
+                    isError.setValue(false);
+
+                    if (data.getSchoolId() != null) preferenceManager.setSchoolId(data.getSchoolId());
+                    if (data.getUsername() != null) preferenceManager.setUsername(data.getUsername());
+                    if (data.getGroup() != null) preferenceManager.setUserGroup(data.getGroup());
+
                     cacheManager.saveCache(CACHE_KEY_PROFILE, data, CacheManager.CacheSecurity.SENSITIVE);
-                } else { isError.setValue(true); errorCode.setValue("auth"); }
+                } else {
+                    String err = response.body() != null ? response.body().getError() : ("HTTP " + response.code());
+                    AppLogger.w(TAG, "getProfile error: " + err + ", probando caché local...");
+                    if (!loadProfileFromCache()) {
+                        isError.setValue(true);
+                        errorCode.setValue(err);
+                    }
+                }
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse<Profile>> call, @NonNull Throwable t) {
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<Profile>> call, @NonNull Throwable t) {
                 isLoading.setValue(false);
-                if (!loadProfileFromCache()) { isError.setValue(true); errorCode.setValue("network"); }
+                AppLogger.e(TAG, "getProfile onFailure: " + t.getMessage(), t);
+                if (!loadProfileFromCache()) {
+                    isError.setValue(true);
+                    errorCode.setValue(t.getMessage());
+                }
             }
         });
     }
@@ -111,24 +148,57 @@ public class ProfileViewModel extends AndroidViewModel {
         if (!refresh && (postsPaginationState.getValue() == null || !postsPaginationState.getValue().hasMore)) return;
 
         int start = currentPage * PAGE_SIZE;
-        postRepository.getPostsRange(start, PAGE_SIZE, new Callback<ApiResponse<List<Post>>>() {
+        AppLogger.d(TAG, "loadUserPosts: start=" + start + ", refresh=" + refresh);
+
+        authRepository.getUserPosts(start, PAGE_SIZE, new Callback<ApiResponse<List<Post>>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Response<ApiResponse<List<Post>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Post> newItems = response.body().getData();
+                    AppLogger.d(TAG, "getUserPosts onResponse: Obtenidos " + (newItems != null ? newItems.size() : 0) + " posts del usuario");
                     updatePostsState(newItems, refresh);
+                } else {
+                    AppLogger.w(TAG, "getUserPosts error: HTTP " + response.code() + ", intentando fallback a Posts genéricos...");
+                    postRepository.getPostsRange(start, PAGE_SIZE, new Callback<ApiResponse<List<Post>>>() {
+                        @Override
+                        public void onResponse(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Response<ApiResponse<List<Post>>> response) {
+                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                updatePostsState(response.body().getData(), refresh);
+                            } else {
+                                postsPaginationState.setValue(PaginationState.empty());
+                            }
+                        }
+                        @Override
+                        public void onFailure(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Throwable t) {
+                            postsPaginationState.setValue(PaginationState.empty());
+                        }
+                    });
                 }
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Throwable t) {}
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<List<Post>>> call, @NonNull Throwable t) {
+                AppLogger.e(TAG, "getUserPosts onFailure: " + t.getMessage(), t);
+                postsPaginationState.setValue(PaginationState.empty());
+            }
         });
     }
 
     private void updatePostsState(List<Post> newItems, boolean refresh) {
         PaginationState<Post> current = postsPaginationState.getValue();
         List<Post> allItems = (refresh || current == null) ? new ArrayList<>() : new ArrayList<>(current.items);
-        allItems.addAll(newItems);
+        if (newItems != null) {
+            allItems.addAll(newItems);
+        }
         if (refresh) currentPage = 1; else currentPage++;
-        postsPaginationState.setValue(PaginationState.content(allItems, newItems.size() >= PAGE_SIZE));
+        
+        if (allItems.isEmpty()) {
+            postsPaginationState.setValue(PaginationState.empty());
+        } else {
+            boolean hasMore = newItems != null && newItems.size() >= PAGE_SIZE;
+            postsPaginationState.setValue(PaginationState.content(allItems, hasMore));
+        }
+        postCount.setValue(allItems.size());
     }
 
     public void logout() {
@@ -178,7 +248,12 @@ public class ProfileViewModel extends AndroidViewModel {
 
     private boolean loadProfileFromCache() {
         Profile cached = cacheManager.loadCache(CACHE_KEY_PROFILE, CacheManager.CacheSecurity.SENSITIVE, Profile.class);
-        if (cached != null) { userData.setValue(cached); return true; }
+        if (cached != null) {
+            AppLogger.d(TAG, "loadProfileFromCache: Perfil recuperado de la caché local para " + cached.getUsername());
+            userData.setValue(cached);
+            isError.setValue(false);
+            return true;
+        }
         return false;
     }
 
@@ -213,5 +288,3 @@ public class ProfileViewModel extends AndroidViewModel {
 
     public interface OnPasswordVerifiedListener { void onVerificationSuccess(); void onVerificationFailed(String error); }
 }
-
-

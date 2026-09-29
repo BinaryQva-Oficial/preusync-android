@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: ExternalEventsFragment.java
- * Versión: v8.0.0
+ * Versión: v8.1.0
  * Descripción: Fragmento para la visualización de eventos externos. 
- *              Utiliza el adaptador unificado EventsAdapter y soporte Room.
+ *              Utiliza el adaptador unificado EventsAdapter.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -13,9 +13,7 @@
 package binaryqva.educative.preusync.ui.fragments;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,21 +54,20 @@ public class ExternalEventsFragment extends PaginatedFeedFragment<Event> {
         return eventsAdapter;
     }
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         eventsViewModel = new ViewModelProvider(requireActivity()).get(ExternalEventsViewModel.class);
         
-        int paddingBottom = (int) (80 * getResources().getDisplayMetrics().density);
-        recyclerView.setPadding(recyclerView.getPaddingLeft(), recyclerView.getPaddingTop(),
-                recyclerView.getPaddingRight(), paddingBottom);
-        recyclerView.setClipToPadding(false);
+        if (recyclerView != null) {
+            int paddingBottom = (int) (80 * getResources().getDisplayMetrics().density);
+            recyclerView.setPadding(recyclerView.getPaddingLeft(), recyclerView.getPaddingTop(),
+                    recyclerView.getPaddingRight(), paddingBottom);
+            recyclerView.setClipToPadding(false);
+        }
 
         observeViewModel();
         eventsViewModel.refresh();
-        return view;
     }
 
     private void observeViewModel() {
@@ -85,5 +82,3 @@ public class ExternalEventsFragment extends PaginatedFeedFragment<Event> {
         else super.resetAndReload();
     }
 }
-
-

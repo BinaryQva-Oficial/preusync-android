@@ -14,6 +14,7 @@ package binaryqva.educative.preusync.ui.adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import binaryqva.educative.preusync.R;
+import binaryqva.educative.preusync.debug.AppLogger;
 import binaryqva.educative.preusync.network.models.Post;
 import binaryqva.educative.preusync.network.models.Profile;
 import binaryqva.educative.preusync.utils.common.NumberFormatUtil;
@@ -81,15 +83,30 @@ public class ProfileAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public void setProfileData(Profile data) {
+        boolean wasLoaded = this.isProfileLoaded;
         this.profileData = data;
         this.isProfileLoaded = true;
-        notifyDataSetChanged();
+        if (!wasLoaded) {
+            notifyDataSetChanged();
+        } else {
+            notifyItemChanged(0);
+            notifyItemChanged(2);
+        }
     }
 
     public void setPostsData(List<Post> newData, boolean hasMore) {
+        int oldSize = this.postsData.size();
         this.postsData = newData != null ? newData : new ArrayList<>();
         this.hasMore = hasMore;
-        notifyDataSetChanged();
+        int newSize = this.postsData.size();
+
+        if (oldSize == 0 && newSize > 0) {
+            notifyItemRangeInserted(4, newSize);
+        } else if (newSize > oldSize) {
+            notifyItemRangeInserted(4 + oldSize, newSize - oldSize);
+        } else {
+            notifyDataSetChanged();
+        }
     }
 
     public void setLoadingState(boolean loading) { this.isLoading = loading; notifyDataSetChanged(); }
@@ -167,53 +184,198 @@ public class ProfileAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     static class ProfileHeaderViewHolder extends RecyclerView.ViewHolder {
-        private final TextView fName, lName, uName, rName, rInfo, iText;
+        private final TextView fName, lName, uName, rName, gText, rExtra, schText, munText, provText, iText;
         private final ImageView rAvatar, sImg;
         private final Context ctx;
 
         ProfileHeaderViewHolder(@NonNull View v) {
             super(v); ctx = v.getContext();
-            fName = v.findViewById(R.id.firstNameText); lName = v.findViewById(R.id.lastNameText);
-            uName = v.findViewById(R.id.usernameText); rName = v.findViewById(R.id.roleText);
-            rInfo = v.findViewById(R.id.roleInfoText); iText = v.findViewById(R.id.initialAvatarText);
-            rAvatar = v.findViewById(R.id.roleAvatarImage); sImg = v.findViewById(R.id.statusImage);
+            fName = v.findViewById(R.id.firstNameText);
+            lName = v.findViewById(R.id.lastNameText);
+            uName = v.findViewById(R.id.usernameText);
+            rName = v.findViewById(R.id.roleText);
+            gText = v.findViewById(R.id.groupText);
+            rExtra = v.findViewById(R.id.roleExtraInfoText);
+            schText = v.findViewById(R.id.schoolText);
+            munText = v.findViewById(R.id.municipalityText);
+            provText = v.findViewById(R.id.provinceText);
+            iText = v.findViewById(R.id.initialAvatarText);
+            rAvatar = v.findViewById(R.id.roleAvatarImage);
+            sImg = v.findViewById(R.id.statusImage);
         }
 
         void bind(Profile p) {
             if (p == null) return;
-            fName.setText(p.getFirstName()); lName.setText(p.getLastName());
-            uName.setText(p.getUsername()); rName.setText(RoleHelper.getLocalizedFromRoleValue(p.getRole(), ctx));
             
-            StringBuilder info = new StringBuilder();
-            if (p.getSchool() != null) info.append(ctx.getString(R.string.profile_school_label, p.getSchool()));
-            if (p.getGroup() != null) info.append(info.length() > 0 ? "\n" : "").append(ctx.getString(R.string.profile_group_label, p.getGroup()));
-            rInfo.setText(info.toString()); rInfo.setVisibility(info.length() > 0 ? View.VISIBLE : View.GONE);
+            String first = p.getFirstName();
+            String last = p.getLastName();
 
-            String s = p.getStatus();
-            sImg.setImageResource("verified".equals(s) ? R.drawable.ic_verified : R.drawable.ic_warning);
-            sImg.setColorFilter(ThemeManager.getThemeColor(ctx, "verified".equals(s) ? R.attr.colorAccent : R.attr.colorWarning));
+            if ((first == null || first.trim().isEmpty()) && p.getFullName() != null && !p.getFullName().trim().isEmpty()) {
+                String full = p.getFullName().trim();
+                int space = full.indexOf(' ');
+                if (space > 0) {
+                    first = full.substring(0, space);
+                    last = full.substring(space + 1);
+                } else {
+                    first = full;
+                }
+            }
+
+            if (first == null || first.trim().isEmpty()) {
+                first = p.getUsername();
+            }
+
+            if (fName != null) fName.setText(first);
+
+            if (lName != null) {
+                if (last != null && !last.trim().isEmpty()) {
+                    lName.setText(last);
+                    lName.setVisibility(View.VISIBLE);
+                } else {
+                    lName.setVisibility(View.GONE);
+                }
+            }
+
+            if (uName != null) uName.setText("@" + p.getUsername());
+            if (rName != null) rName.setText(RoleHelper.getLocalizedFromRoleValue(p.getRole(), ctx));
+
+            if (gText != null) {
+                if (p.getGroup() != null && !p.getGroup().trim().isEmpty()) {
+                    gText.setText(ctx.getString(R.string.profile_group_label, p.getGroup()));
+                    gText.setVisibility(View.VISIBLE);
+                } else {
+                    gText.setVisibility(View.GONE);
+                }
+            }
+
+            if (rExtra != null) {
+                StringBuilder extra = new StringBuilder();
+                if (p.getTutee() != null && !p.getTutee().trim().isEmpty()) {
+                    extra.append("Educando: @").append(p.getTutee());
+                }
+                if (p.getResponsibilities() != null && !p.getResponsibilities().trim().isEmpty()) {
+                    if (extra.length() > 0) extra.append("\n");
+                    extra.append("Resp: ").append(p.getResponsibilities());
+                }
+                if (extra.length() > 0) {
+                    rExtra.setText(extra.toString());
+                    rExtra.setVisibility(View.VISIBLE);
+                } else {
+                    rExtra.setVisibility(View.GONE);
+                }
+            }
+
+            if (schText != null) {
+                String school = p.getSchool();
+                if (school != null && !school.trim().isEmpty()) {
+                    schText.setText(school);
+                } else {
+                    schText.setText("Sin escuela");
+                }
+                schText.setVisibility(View.VISIBLE);
+            }
+
+            if (munText != null) {
+                String mun = p.getMunicipality();
+                if (mun != null && !mun.trim().isEmpty()) {
+                    munText.setText(mun);
+                } else {
+                    munText.setText("Sin municipio");
+                }
+                munText.setVisibility(View.VISIBLE);
+            }
+
+            if (provText != null) {
+                String prov = p.getProvince();
+                if (prov != null && !prov.trim().isEmpty()) {
+                    provText.setText(prov);
+                } else {
+                    provText.setText("Sin provincia");
+                }
+                provText.setVisibility(View.VISIBLE);
+            }
+
+            if (sImg != null) {
+                String s = p.getStatus();
+                sImg.setImageResource("verified".equals(s) ? R.drawable.ic_verified : R.drawable.ic_warning);
+                sImg.setColorFilter(ThemeManager.getThemeColor(ctx, "verified".equals(s) ? R.attr.colorAccent : R.attr.colorWarning));
+            }
 
             renderAvatar(p);
         }
 
         private void renderAvatar(Profile p) {
+            if (p == null) return;
             String url = p.getAvatarUrl();
+
+            // 1. Caso: Configuración en JSON (type: "initial" / "role" / "inicial" / "rol")
             if (url != null && url.startsWith("{")) {
                 try {
                     JSONObject j = new JSONObject(url);
-                    if ("inicial".equals(j.getString("tipo"))) {
-                        iText.setText(j.getString("inicial")); iText.setVisibility(View.VISIBLE); rAvatar.setVisibility(View.GONE);
-                    } else {
-                        rAvatar.setImageResource(RoleHelper.getRoleIconResId(j.getString("rol")));
-                        rAvatar.setVisibility(View.VISIBLE); iText.setVisibility(View.GONE);
+                    String type = j.optString("type", j.optString("tipo", ""));
+                    
+                    if ("initial".equalsIgnoreCase(type) || "inicial".equalsIgnoreCase(type)) {
+                        String initial = j.optString("initial", j.optString("inicial", ""));
+                        if (initial.isEmpty()) {
+                            String name = p.getFirstName();
+                            if (name == null || name.trim().isEmpty()) name = p.getUsername();
+                            initial = (name != null && !name.trim().isEmpty()) ? name.substring(0, 1).toUpperCase() : "?";
+                        }
+                        iText.setText(initial);
+                        iText.setVisibility(View.VISIBLE);
+                        rAvatar.setVisibility(View.GONE);
+                        return;
+                    } else if ("role".equalsIgnoreCase(type) || "rol".equalsIgnoreCase(type)) {
+                        String role = j.optString("role", j.optString("rol", p.getRole()));
+                        int iconRes = RoleHelper.getRoleIconResId(role);
+                        rAvatar.setImageResource(iconRes);
+                        rAvatar.setVisibility(View.VISIBLE);
+                        iText.setVisibility(View.GONE);
+                        return;
                     }
-                } catch (Exception ignored) {}
-            } else if (url != null && !url.isEmpty()) {
-                iText.setVisibility(View.GONE); rAvatar.setVisibility(View.VISIBLE);
-                Glide.with(ctx).load(url).circleCrop().into(rAvatar);
-            } else {
-                rAvatar.setImageResource(R.drawable.ic_nav_profile); rAvatar.setVisibility(View.VISIBLE); iText.setVisibility(View.GONE);
+                } catch (Exception e) {
+                    AppLogger.w("ProfileAdapter", "Error al parsear JSON de avatar: " + e.getMessage());
+                }
             }
+
+            // 2. Caso: Imagen Base64 o URL remota
+            if (url != null && !url.trim().isEmpty()) {
+                if (url.startsWith("data:image") || url.length() > 200) {
+                    try {
+                        byte[] decodedString = Base64.decode(
+                                url.contains(",") ? url.split(",")[1] : url,
+                                Base64.DEFAULT
+                        );
+                        iText.setVisibility(View.GONE);
+                        rAvatar.setVisibility(View.VISIBLE);
+                        Glide.with(ctx)
+                                .load(decodedString)
+                                .circleCrop()
+                                .placeholder(R.drawable.ic_nav_profile)
+                                .into(rAvatar);
+                        return;
+                    } catch (Exception e) {
+                        AppLogger.w("ProfileAdapter", "Error al decodificar Base64 de avatar");
+                    }
+                } else {
+                    iText.setVisibility(View.GONE);
+                    rAvatar.setVisibility(View.VISIBLE);
+                    Glide.with(ctx)
+                            .load(url)
+                            .circleCrop()
+                            .placeholder(R.drawable.ic_nav_profile)
+                            .into(rAvatar);
+                    return;
+                }
+            }
+
+            // 3. Fallback por defecto: Generar avatar de inicial con el nombre o usuario
+            String name = p.getFirstName();
+            if (name == null || name.trim().isEmpty()) name = p.getUsername();
+            String initial = (name != null && !name.trim().isEmpty()) ? name.substring(0, 1).toUpperCase() : "?";
+            iText.setText(initial);
+            iText.setVisibility(View.VISIBLE);
+            rAvatar.setVisibility(View.GONE);
         }
     }
 

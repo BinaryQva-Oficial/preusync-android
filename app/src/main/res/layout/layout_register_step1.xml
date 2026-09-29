@@ -6,23 +6,6 @@
     android:orientation="vertical"
     android:paddingBottom="8dp">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/avatarCardView"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="36dp"
-        app:cardElevation="2dp">
-        <ImageView
-            android:id="@+id/avatarImageView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_nav_profile"
-            android:contentDescription="@string/title_profile" />
-    </com.google.android.material.card.MaterialCardView>
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/registerUsernameTextInputLayout"
         style="@style/Widget.PreuSync.TextInputLayout.OutlinedBox"
@@ -36,7 +19,7 @@
             android:layout_height="wrap_content"
             android:importantForAutofill="yes"
             android:autofillHints="username"
-            android:inputType="textPersonName" />
+            android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout

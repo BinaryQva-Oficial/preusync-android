@@ -2,9 +2,10 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase Abstracta: PaginatedFeedFragment.java
- * Versión: v6.4.9
- * Descripción: Abstracción genérica para feeds con soporte de persistencia
- *              local, paginación y manejo de estados de carga.
+ * Versión: v6.6.0
+ * Descripción: Abstracción genérica estandarizada para feeds paginados.
+ *              Hereda de BaseFragment para compartir la gestión unificada
+ *              de los 4 estados visuales (Loading, Content, Empty, Error).
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -33,17 +34,13 @@ import binaryqva.educative.preusync.utils.ui.SwipeRefreshHelper;
 import binaryqva.educative.preusync.utils.theme.ThemeManager;
 
 /**
- * Abstracción genérica para feeds con soporte de persistencia local.
+ * Abstracción genérica para feeds con soporte de persistencia local y estados unificados.
  * @param <T> Tipo de dato de la lista.
  */
 public abstract class PaginatedFeedFragment<T> extends BaseFragment {
 
     protected RecyclerView recyclerView;
     protected SmartSwipeRefreshLayout swipeRefreshLayout;
-
-    protected View loaderLayout;
-    protected View emptyLayout;
-    protected View errorLayout;
 
     protected SwipeRefreshHelper swipeRefreshHelper;
     protected OfflineSnackbarManager offlineSnackbarManager;
@@ -65,11 +62,6 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
         recyclerView = view.findViewById(R.id.recyclerView);
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
 
-        // BÚSQUEDA DE LAYOUTS DE ESTADO (ESTANDARIZADOS):
-        loaderLayout = view.findViewById(R.id.loaderLayout);
-        emptyLayout = view.findViewById(R.id.emptyLayout);
-        errorLayout = view.findViewById(R.id.errorLayout);
-
         setupRecyclerView();
         setupRefreshLogic(view);
 
@@ -77,13 +69,18 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
         adapter = createAdapter(itemsList);
         recyclerView.setAdapter(adapter);
 
-        updateUiState(PaginationState.STATE_LOADING);
+        updateUiState(PaginationState.STATE_LOADING, !itemsList.isEmpty());
 
         setupScrollListener();
     }
 
+    @Override
+    protected void onRetry() {
+        resetAndReload();
+    }
+
     /**
-     * Procesa y visualiza el estado de paginación actual.
+     * Procesa y visualiza el estado de paginación de forma unificada.
      * @param state Objeto PaginationState inmutable.
      */
     protected void handlePaginationState(PaginationState<T> state) {
@@ -91,11 +88,12 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
         this.currentState = state;
         this.loading = state.state == PaginationState.STATE_LOADING;
 
-        updateUiState(state.state);
-
+        // 1. Sincronizar elementos del adaptador
         if (state.state == PaginationState.STATE_CONTENT || state.state == PaginationState.STATE_EMPTY) {
             itemsList.clear();
-            itemsList.addAll(state.items);
+            if (state.items != null) {
+                itemsList.addAll(state.items);
+            }
             adapter.notifyDataSetChanged();
             
             if (adapter instanceof FooterableAdapter) {
@@ -107,18 +105,23 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
             }
         }
 
-        if (swipeRefreshHelper != null) swipeRefreshHelper.finishRefresh();
-        
-        boolean hasData = !state.items.isEmpty();
-        offlineSnackbarManager.setSectionHasCache(getCacheKey(), hasData);
-        offlineSnackbarManager.checkAndUpdate();
-    }
+        // 2. Transición de estados visuales basada en el contenido actualizado
+        int targetState = state.state;
+        if (targetState == PaginationState.STATE_CONTENT && itemsList.isEmpty()) {
+            targetState = PaginationState.STATE_EMPTY;
+        }
+        updateUiState(targetState, !itemsList.isEmpty());
 
-    private void updateUiState(int state) {
-        if (recyclerView != null) recyclerView.setVisibility((state == PaginationState.STATE_CONTENT || (state == PaginationState.STATE_LOADING && !itemsList.isEmpty())) ? View.VISIBLE : View.GONE);
-        if (loaderLayout != null) loaderLayout.setVisibility(state == PaginationState.STATE_LOADING && itemsList.isEmpty() ? View.VISIBLE : View.GONE);
-        if (emptyLayout != null) emptyLayout.setVisibility(state == PaginationState.STATE_EMPTY ? View.VISIBLE : View.GONE);
-        if (errorLayout != null) errorLayout.setVisibility(state == PaginationState.STATE_ERROR && itemsList.isEmpty() ? View.VISIBLE : View.GONE);
+        // 3. Finalizar animaciones e indicadores auxiliares
+        if (swipeRefreshHelper != null && state.state != PaginationState.STATE_LOADING) {
+            swipeRefreshHelper.finishRefresh();
+        }
+        
+        boolean hasData = !itemsList.isEmpty();
+        if (offlineSnackbarManager != null) {
+            offlineSnackbarManager.setSectionHasCache(getCacheKey(), hasData);
+            offlineSnackbarManager.checkAndUpdate();
+        }
     }
 
     private void setupRecyclerView() {
@@ -141,12 +144,12 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
     }
 
     @Override
-    public void onResume() { super.onResume(); offlineSnackbarManager.checkAndUpdate(); }
+    public void onResume() { super.onResume(); if (offlineSnackbarManager != null) offlineSnackbarManager.checkAndUpdate(); }
 
     @Override
     public void onPause() {
         super.onPause();
-        offlineSnackbarManager.dismiss();
+        if (offlineSnackbarManager != null) offlineSnackbarManager.dismiss();
         if (pendingLoadMoreRunnable != null) loadMoreHandler.removeCallbacks(pendingLoadMoreRunnable);
     }
 
@@ -154,7 +157,7 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (swipeRefreshHelper != null) swipeRefreshHelper.cleanup();
-        offlineSnackbarManager.onDestroy();
+        if (offlineSnackbarManager != null) offlineSnackbarManager.onDestroy();
         loadMoreHandler.removeCallbacksAndMessages(null);
     }
 
@@ -188,7 +191,7 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
         if (pendingLoadMoreRunnable != null) loadMoreHandler.removeCallbacks(pendingLoadMoreRunnable);
         itemsList.clear(); 
         loading = false;
-        updateUiState(PaginationState.STATE_LOADING);
+        updateUiState(PaginationState.STATE_LOADING, false);
         if (swipeRefreshHelper != null) swipeRefreshHelper.startRefreshingAnimation();
         loadMoreItems();
     }
@@ -201,5 +204,3 @@ public abstract class PaginatedFeedFragment<T> extends BaseFragment {
         }
     }
 }
-
-

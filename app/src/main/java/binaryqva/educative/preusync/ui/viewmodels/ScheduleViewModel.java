@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: ScheduleViewModel.java
- * Versión: v8.0.0
- * Descripción: ViewModel para la gestión del horario escolar. Soporta modelos
- *              tipados para grupos nacionales.
+ * Versión: v9.0.0
+ * Descripción: ViewModel para la gestión del horario escolar. Soporta filtrado
+ *              por escuela activa y procesamiento de matriz de 16 turnos.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import binaryqva.educative.preusync.data.repositories.ScheduleRepository;
+import binaryqva.educative.preusync.debug.AppLogger;
 import binaryqva.educative.preusync.network.models.ApiResponse;
 import binaryqva.educative.preusync.network.models.Schedule;
 import binaryqva.educative.preusync.network.models.SchoolGroup;
@@ -35,6 +36,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ScheduleViewModel extends AndroidViewModel {
+
+    private static final String TAG = "PreuSync_ScheduleVM";
 
     public static final int STATE_LOADING = 0;
     public static final int STATE_SUCCESS = 1;
@@ -70,14 +73,19 @@ public class ScheduleViewModel extends AndroidViewModel {
     public void loadGroups() {
         groupsState.setValue(STATE_LOADING);
         String schoolId = preferenceManager.getSchoolId();
-        if (schoolId == null) {
-            groupsState.setValue(STATE_ERROR);
+        AppLogger.d(TAG, "loadGroups para schoolId: " + schoolId);
+
+        if (schoolId == null || schoolId.isEmpty()) {
+            AppLogger.w(TAG, "loadGroups: No hay schoolId configurado en preferencias");
+            groupsState.setValue(STATE_EMPTY);
             updateCombinedState();
             return;
         }
 
         if (!AppUtils.isConnected(getApplication())) {
-            updateCombinedState(); return;
+            AppLogger.w(TAG, "loadGroups: Sin conexión a internet");
+            updateCombinedState();
+            return;
         }
 
         repository.getGroups(schoolId, new Callback<ApiResponse<List<SchoolGroup>>>() {
@@ -85,22 +93,32 @@ public class ScheduleViewModel extends AndroidViewModel {
             public void onResponse(@NonNull Call<ApiResponse<List<SchoolGroup>>> call, @NonNull Response<ApiResponse<List<SchoolGroup>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<SchoolGroup> groups = response.body().getData();
-                    groupsList.setValue(groups);
-                    groupsState.setValue(groups.isEmpty() ? STATE_EMPTY : STATE_SUCCESS);
-                    if (!groups.isEmpty()) {
+                    List<SchoolGroup> items = groups != null ? groups : new ArrayList<>();
+                    groupsList.setValue(items);
+                    groupsState.setValue(items.isEmpty() ? STATE_EMPTY : STATE_SUCCESS);
+                    AppLogger.d(TAG, "loadGroups onResponse: " + items.size() + " grupos recibidos");
+                    if (!items.isEmpty()) {
+                        String userGrp = preferenceManager.getUserGroup();
                         String last = preferenceManager.getLastScheduleGroup();
+                        String targetGroup = userGrp != null && !userGrp.isEmpty() ? userGrp : last;
+                        
                         boolean found = false;
-                        if (last != null) {
-                            for (SchoolGroup sg : groups) if (last.equals(sg.getName())) { found = true; break; }
+                        if (targetGroup != null) {
+                            for (SchoolGroup sg : items) if (targetGroup.equals(sg.getName())) { found = true; break; }
                         }
-                        String g = found ? last : groups.get(0).getName();
-                        selectGroup(g);
+                        String selected = found ? targetGroup : items.get(0).getName();
+                        selectGroup(selected);
                     }
-                } else groupsState.setValue(STATE_ERROR);
+                } else {
+                    AppLogger.w(TAG, "loadGroups error: HTTP " + response.code());
+                    groupsState.setValue(STATE_EMPTY);
+                }
                 updateCombinedState();
             }
+
             @Override public void onFailure(@NonNull Call<ApiResponse<List<SchoolGroup>>> call, @NonNull Throwable t) {
-                groupsState.setValue(STATE_ERROR);
+                AppLogger.e(TAG, "loadGroups onFailure: " + t.getMessage(), t);
+                groupsState.setValue(STATE_EMPTY);
                 updateCombinedState();
             }
         });
@@ -113,7 +131,9 @@ public class ScheduleViewModel extends AndroidViewModel {
         updateCombinedState();
 
         String schoolId = preferenceManager.getSchoolId();
-        if (schoolId == null) {
+        AppLogger.d(TAG, "loadScheduleForGroup: group=" + group + ", schoolId=" + schoolId);
+
+        if (schoolId == null || schoolId.isEmpty()) {
             loadFromRoom(group);
             return;
         }
@@ -128,13 +148,24 @@ public class ScheduleViewModel extends AndroidViewModel {
             public void onResponse(@NonNull Call<ApiResponse<List<Schedule>>> call, @NonNull Response<ApiResponse<List<Schedule>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Schedule> data = response.body().getData();
-                    processSchedule(group, data);
-                    scheduleState.setValue(STATE_SUCCESS);
-                    preferenceManager.setLastScheduleGroup(group);
-                } else loadFromRoom(group);
+                    if (data == null || data.isEmpty()) {
+                        AppLogger.d(TAG, "getSchedule: Sin horario para grupo " + group);
+                        scheduleState.setValue(STATE_EMPTY);
+                    } else {
+                        AppLogger.d(TAG, "getSchedule: Obtenidas " + data.size() + " entradas para grupo " + group);
+                        processSchedule(group, data);
+                        scheduleState.setValue(STATE_SUCCESS);
+                        preferenceManager.setLastScheduleGroup(group);
+                    }
+                } else {
+                    AppLogger.w(TAG, "getSchedule error: HTTP " + response.code() + ", consultando Room local...");
+                    loadFromRoom(group);
+                }
                 updateCombinedState();
             }
+
             @Override public void onFailure(@NonNull Call<ApiResponse<List<Schedule>>> call, @NonNull Throwable t) {
+                AppLogger.e(TAG, "getSchedule onFailure: " + t.getMessage(), t);
                 loadFromRoom(group);
                 updateCombinedState();
             }
@@ -144,54 +175,66 @@ public class ScheduleViewModel extends AndroidViewModel {
     private void loadFromRoom(String group) {
         repository.getLocalSchedule(group, data -> {
             if (data != null && !data.isEmpty()) {
+                AppLogger.d(TAG, "loadFromRoom: Recuperado horario de Room para " + group);
                 processSchedule(group, data);
                 scheduleState.setValue(STATE_SUCCESS);
             } else {
-                scheduleState.setValue(STATE_ERROR);
+                AppLogger.w(TAG, "loadFromRoom: Sin datos en Room para " + group);
+                scheduleState.setValue(STATE_EMPTY);
             }
             updateCombinedState();
         });
     }
 
     private void processSchedule(String group, List<Schedule> rows) {
-        String[][] normalMatrix = new String[15][5];
-        String[][] continuousMatrix = new String[15][5];
-        for(int i=0; i<15; i++) for(int j=0; j<5; j++) { normalMatrix[i][j]=""; continuousMatrix[i][j]=""; }
-        boolean isContinuous = false;
+        String[][] matrix = new String[16][5];
+        for(int i=0; i<16; i++) for(int j=0; j<5; j++) { matrix[i][j]=""; }
 
-        for (Schedule s : rows) {
-            int d = getDayIndex(s.getDay());
-            int r = getRowIndexForShift(s.getShift());
-            if (d >= 0 && r >= 0) {
-                if ("Normal".equals(s.getScheduleType())) normalMatrix[r][d] = s.getSubject();
-                else { continuousMatrix[r][d] = s.getSubject(); isContinuous = true; }
+        if (rows != null) {
+            for (Schedule s : rows) {
+                int d = getDayIndex(s.getDay());
+                int r = getRowIndexForShift(s.getShift());
+                if (d >= 0 && r >= 0 && r < 16) {
+                    matrix[r][d] = s.getSubject() != null ? s.getSubject() : "";
+                }
             }
         }
         
         Map<String, String[][]> nMap = new HashMap<>(normalScheduleMap.getValue() != null ? normalScheduleMap.getValue() : new HashMap<>());
-        nMap.put(group, normalMatrix);
+        nMap.put(group, matrix);
         normalScheduleMap.setValue(nMap);
-
-        Map<String, String[][]> cMap = new HashMap<>(continuousScheduleMap.getValue() != null ? continuousScheduleMap.getValue() : new HashMap<>());
-        cMap.put(group, continuousMatrix);
-        continuousScheduleMap.setValue(cMap);
-
-        Map<String, Boolean> tMap = new HashMap<>(scheduleTypeByGroup.getValue() != null ? scheduleTypeByGroup.getValue() : new HashMap<>());
-        tMap.put(group, isContinuous);
-        scheduleTypeByGroup.setValue(tMap);
     }
 
     private int getRowIndexForShift(int shift) {
         switch (shift) {
-            case 1: return 0; case 2: return 2; case 3: return 4; case 4: return 6;
-            case 5: return 8; case 6: return 10; case 7: return 12; case 8: return 14;
-            default: return -1;
+            case 0: return 0;  // CI
+            case 1: return 1;  // Turno 1
+            case -1: return 2; // Descanso 1
+            case 2: return 3;  // Turno 2
+            case -2: return 4; // Descanso 2
+            case 3: return 5;  // Turno 3
+            case -3: return 6; // Merienda
+            case 4: return 7;  // Turno 4
+            case -4: return 8; // Descanso 3
+            case 5: return 9;  // Turno 5
+            case -5: return 10; // Almuerzo
+            case 6: return 11; // Turno 6
+            case -6: return 12; // Descanso 4
+            case 7: return 13; // Turno 7
+            case -7: return 14; // Descanso 5
+            case 8: return 15; // Turno 8
+            default: return shift >= 0 && shift < 16 ? shift : -1;
         }
     }
 
     private int getDayIndex(String day) {
-        String[] days = {"L", "M", "X", "J", "V"};
-        for (int i = 0; i < days.length; i++) if (days[i].equals(day)) return i;
+        if (day == null) return -1;
+        String d = day.trim().toUpperCase();
+        if (d.startsWith("L")) return 0;
+        if (d.startsWith("MAR") || d.equals("M")) return 1;
+        if (d.startsWith("MIÉR") || d.startsWith("MIER") || d.equals("X")) return 2;
+        if (d.startsWith("J")) return 3;
+        if (d.startsWith("V")) return 4;
         return -1;
     }
 

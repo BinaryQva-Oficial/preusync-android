@@ -211,9 +211,13 @@ public class AuthViewModel extends AndroidViewModel {
 
     private void handleError(Throwable t) {
         String msg = t.getMessage();
-        if (t instanceof UnknownHostException) msg = getApplication().getString(R.string.error_network_connection);
-        else if (t instanceof ConnectException) msg = getApplication().getString(R.string.error_server);
-        else if (t instanceof SocketTimeoutException) msg = getApplication().getString(R.string.error_connection);
+        if (t instanceof UnknownHostException) {
+            msg = getApplication().getString(R.string.error_network_connection) + " (DNS Error)";
+        } else if (t instanceof ConnectException) {
+            msg = getApplication().getString(R.string.error_server) + " (Connection Refused)";
+        } else if (t instanceof SocketTimeoutException) {
+            msg = getApplication().getString(R.string.error_connection) + " (Timeout)";
+        }
         error.setValue(msg);
     }
 

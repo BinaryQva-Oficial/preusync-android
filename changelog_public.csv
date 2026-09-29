@@ -1,5 +1,7 @@
 release_date,version_name,version_code,release_type,details
-17/09/2026,v0.99.99,2709,Beta,"✨ Experiencia Refinada: Botones con efectos visuales mejorados y textos perfectamente centrados. 📱 Pantalla de Acceso Pro: Ahora los campos de usuario y contraseña son compatibles con el autorrelleno de tu dispositivo. 🛠️ Robustez: Mejor manejo de errores cuando no hay internet o el servidor no responde. ⚡ Rapidez: Nuevo sistema de memoria para cargar las opciones de tu provincia al instante."
+24/09/2026,v0.99.110,2750,Beta,"✨ Cabecera Refinada: Saludo de bienvenida personalizado y logo estilizado. 🔘 Navegación Perfecta: Botones y barras de progreso centrados armónicamente. 🚀 Onboarding Unificado: Indicadores de paso adaptados al estilo del registro. 📅 Horario Escolar Remasterizado: Matriz oficial de 16 turnos con resaltado de clase activa en tiempo real. 🖼️ Avatares Inteligentes: Generación automática de iniciales y vista previa en todos los pasos. 🔒 Seguridad y Estabilidad: Cifrado militar AES-256 en toda la caché y motor de red 100% unificado."
+20/09/2026,v0.99.99,2709,Beta,"✨ Experiencia Refinada: Botones con efectos visuales mejorados y textos perfectamente centrados. 📱 Pantalla de Acceso Pro: Ahora los campos de usuario y contraseña son compatibles con el autorrelleno de tu dispositivo. 🛠️ Robustez: Mejor manejo de errores cuando no hay internet o el servidor no responde. ⚡ Rapidez: Nuevo sistema de memoria para cargar las opciones de tu provincia al instante."
+17/09/2026,v0.99.98,2708,Beta,"📱 Pulido de Acceso: Ajustes visuales en el formulario de inicio de sesión y registro. ⌨️ Teclado Inteligente: Mejoras de accesibilidad y autorrelleno."
 10/09/2026,v0.99.97,2707,Beta,"🚀 Onboarding Profesional: Animaciones suaves y barra de progreso refinada. ✨ UI Inteligente: Tarjeta de acceso que se adapta al contenido y nuevos estilos visuales. 🛠️ Estabilidad: Corrección en el visor de textos y mejoras en la personalización de perfil."
 10/09/2026,v0.99.96,2706,Beta,"🔍 Validación Nacional: Sistema inteligente que verifica la disponibilidad de tu escuela y grupo en tiempo real.
 🎓 Roles Expandidos: Mejora en el registro para Profesores y Tutores con campos específicos y verificación de usuarios.
@@ -11,104 +13,87 @@ release_date,version_name,version_code,release_type,details
 🌍 Despliegue Nacional: Preparación de la infraestructura para conectar a todas las escuelas del país.
 🏛️ Multi-Tenancy: Ahora puedes seleccionar tu Provincia, Municipio y Escuela durante el registro."
 02/09/2026,v0.99.80,2680,Beta,"🏛️ Arquitectura de Hierro: Reconstrucción total para máxima rapidez.
-💾 Persistencia Pro: Integración de Room para un manejo offline perfecto.
-🔄 Sincronización Inteligente: Nuevo sistema que garantiza información siempre correcta."
-24/08/2026,v0.99.50,2650,Beta,"🌍 Preparados para el Mundo: Soporte multilingüe completo (ES/EN).
-📚 Documentación Maestra: Código estandarizado para soporte de excelencia.
-💎 Interfaz Limpia: Rediseño masivo de botones y layouts."
-14/08/2026,v0.99.40,2620,Beta,"⚡ Motor Renovado: Carga de contenidos mucho más veloz con Retrofit 2.
-📂 Transferencia Pesada: Nuevo módulo para subir y descargar archivos grandes.
-🖼️ Diseño Adaptable: Tarjetas optimizadas sin imágenes."
-04/08/2026,v0.99.35,2610,Beta,"🎨 Estilo 'Celeste': Nueva interfaz Material Design 3 Expressive.
-✨ Animaciones Premium: Botones con movimiento inteligente al presionarlos.
-🎵 Identidad Sonora: Sonidos reales para notificaciones."
-25/07/2026,v0.99.30,2605,Beta,"🚀 Diagnóstico Pro: Nueva consola de registros internos.
-🔐 Acceso Seguro: Verificación de identidad reforzada.
-👤 Autores Fiables: Mejoras en la carga de perfiles."
-15/07/2026,v0.99.25,2596,Beta,"🛠️ Adiós Sketchware: Migramos oficialmente a Android Studio.
-📡 Modo Offline Robusto: Tus datos guardados tienen prioridad absoluta.
-🔄 Recarga Suave: Animaciones fluidas al actualizar."
-05/07/2026,v0.99.24,2595,Beta,"fix: Solución a errores visuales tras carga de datos.
-📱 Estabilidad: Mejoras en el perfil de usuario."
-25/06/2026,v0.99.23,2594,Beta,"sec: Cifrado de alta seguridad para tus datos personales.
-📅 Efemérides: Sistema mejorado con memoria para varias fechas."
-15/06/2026,v0.99.22,2593,Beta,"📊 Listas Inteligentes: Gestión centralizada de estados (Cargando, Vacío, Error).
-🔧 Corrección Global: Términos técnicos unificados."
-05/06/2026,v0.99.21,2592,Beta,"👤 Perfil Renovado: Nuevo diseño para tus estadísticas y publicaciones.
-✨ Refresco Inteligente: Indicador de arco animado sincronizado."
-27/05/2026,v0.99.20,2591,Beta,"🔧 Estabilidad de Scroll: Eliminamos saltos al tocar elementos.
-🔔 Avisos Precisos: Las notificaciones te llevan directo a la sección."
-17/05/2026,v0.99.19,2520,Beta,"📶 Indicadores de Carga: Nuevos avisos en la base de las listas.
-⚡ Suavidad Total: Navegación fluida por contenidos extensos."
-07/05/2026,v0.99.15,2480,Beta,"🔑 Identidad Segura: Perfil con nombres y apellidos separados.
-🔧 Sync Automático: Tus datos siempre al día."
-27/04/2026,v0.99.12,2381,Beta,"🔄 Refactorización: Uso masivo de listas modernas.
-🔐 Seguridad: Solucionados errores en el inicio de sesión."
-17/04/2026,v0.99.10,2305,Beta,"🏠 Home Informativo: Añadidos turno actual y efeméride destacada.
-📶 Offline AES: Caché cifrada de alta seguridad.
-✨ Auto-scroll: Carruseles inteligentes con pausa al tacto."
-07/04/2026,v0.99.8,2217,Beta,"🚀 Nuevo Horizonte: Migración crítica a Supabase y Node.js.
-☁️ Nube Profesional: Almacenamiento de imágenes confiable."
-28/03/2026,v0.99.5,2134,Beta,"🕒 Horario Ágil: Nueva visualización dinámica de clases.
-❤️ Votos Estables: Mejoras en Likes y Dislikes."
-18/03/2026,v0.99.0,2067,Beta,"🔔 Navegación Precisas: Atajos directos desde el icono de la App.
-🔧 Limpieza: Primera gran optimización interna."
-09/03/2026,v0.98.0,1978,Beta,"📶 Ahorro de Datos: Navegación más económica y privada.
-🔐 Privacidad: Archivos guardados en zona segura."
-27/02/2026,v0.97.0,1893,Beta,"⚡ Velocidad Extrema: Respuesta de red optimizada.
-🛡️ Auditoría: Revisión completa de seguridad."
-17/02/2026,v0.95.0,1812,Beta,"⚙️ Ajustes Avanzados: Nueva arquitectura de configuración.
-❤️ Autovoto Bloqueado: Protección para no votarte a ti mismo."
-07/02/2026,v0.90.0,1721,Beta,"🎨 Personalización: Ajustes de Apariencia con Material You.
-🌈 Colores Dinámicos: La App se adapta a tu fondo de pantalla."
-28/01/2026,v0.85.0,1642,Beta,"🔧 Estabilización: Solucionados problemas en listas largas.
-📊 Diseño Limpio: Mejor espaciado en publicaciones."
-18/01/2026,v0.80.0,1567,Beta,"🕒 Horario Escolar: Soporte para grupos y turnos Normal/Corrido.
-🏫 Carga Dinámica: Horarios para todos los años."
-08/01/2026,v0.75.0,1498,Beta,"feat: Notificaciones con sonidos fijos y canales."
-29/12/2025,v0.70.0,1423,Beta,"🆔 IDs Modernos: Migración técnica para evitar errores.
-❤️ Votos por Usuario: Reacciones guardadas permanentemente."
-19/12/2025,v0.65.0,1356,Beta,"fix: Solución a cierres en registro y errores de compilación."
-10/12/2025,v0.60.0,1289,Beta,"refactor: Arquitectura de Helpers para una App más ligera.
-🛠️ Herramientas Pro: Mejor selector de archivos."
-30/11/2025,v0.55.0,1212,Beta,"refactor: Purga de idioma. Motor interno en inglés.
-📝 Lectura PRO: Soporte de código en 160+ lenguajes."
-20/11/2025,v0.50.0,1145,Beta,"📖 Motor WebView: Nueva tecnología para tablas educativas.
-✨ Tablas Perfectas: Visualización de información más clara."
-10/11/2025,v0.45.0,1078,Beta,"📝 Experimento Markdown: Primeros pasos con texto enriquecido.
-🔡 Fuente Mono: Mejor alineación de textos técnicos."
-31/10/2025,v0.40.0,1024,Beta,"📱 Preparados: Soporte para Android 14.
-🔐 Permisos: Gestión de privacidad para fotos."
-21/10/2025,v0.36.0,968,Beta,"📡 Sync Invisible: Mejoras en sincronización automática.
-🔋 Batería: Optimización para ahorro de energía."
-11/10/2025,v0.33.0,901,Beta,"🎨 Temas Centralizados: Cambio fluido claro/oscuro.
-🔔 Canales: Mejor organización de avisos."
-01/10/2025,v0.30.0,845,Beta,"🕒 Horario Inicial: Primera versión de tabla de clases.
-🌐 Conexión Nativa: Comunicación directa con el servidor."
-21/09/2025,v0.27.0,789,Beta,"✨ Diseño: Paneles desplegables redondeados.
-🔄 Rebote: Animaciones táctiles naturales."
-12/09/2025,v0.25.0,723,Beta,"🎨 Colores: Soporte inicial para colores dinámicos.
-📸 Imágenes: Envío de fotos en posts optimizado."
-02/09/2025,v0.23.0,657,Beta,"feat: Recordatorios académicos.
-✨ Nuevo Look: Pequeñas mejoras estéticas."
-23/08/2025,v0.21.0,589,Beta,"feat: Ajustes de velocidad de animaciones.
-🔧 Corrección: Solucionados errores de sincronización."
-13/08/2025,v0.19.0,524,Beta,"⚙️ Sistema: Estructura base para tareas de fondo."
-03/08/2025,v0.17.0,468,Beta,"📶 Navegación Offline: Experimentos de ofuscación.
-🔐 Privacidad: Protección básica de información."
-24/07/2025,v0.15.0,412,Beta,"feat: Información del rol dinámica (JSONB).
-🖼️ Visual: Efectos Blur en portadas de noticias."
-14/07/2025,v0.13.0,356,Beta,"feat: Avatares dinámicos (inicial/rol).
-🎨 Estilo: Guardado de avatar en la nube."
-04/07/2025,v0.12.0,312,Alpha,"feat: BottomSheets para detalles y preview Markdown."
-24/06/2025,v0.10.0,268,Alpha,"feat: Efemérides con ranking por Importancia."
-16/06/2025,v0.9.0,215,Alpha,"feat: Interacción social inicial (Likes/Dislikes)."
-06/06/2025,v0.8.0,178,Alpha,"feat: Creación de publicaciones con imágenes."
-26/05/2025,v0.7.0,124,Alpha,"🏠 Pantalla Principal: Diseño de carruseles de noticias."
-16/05/2025,v0.6.0,89,Alpha,"📆 Eventos: Implementación de agenda escolar."
-06/05/2025,v0.5.0,56,Alpha,"🔐 Bienvenida: Sistema de acceso de usuarios."
-26/04/2025,v0.4.0,42,Alpha,"feat: Reorganización del backend en Sheets."
-16/04/2025,v0.3.0,28,Alpha,"feat: Integración con Apps Script y funciones core."
-06/04/2025,v0.2.0,12,Alpha,"📰 Novedades: Sección de noticias conectada a la red."
-27/03/2025,v0.1.0,1,Alpha,"Génesis del proyecto PreuSync en Sketchware. Primeros esquemas."
-
+💾 Persistencia Profesional: Integración de Room para un manejo de datos local mucho más rápido y confiable.
+🔄 Sincronización Inteligente: Nuevo motor de red en segundo plano optimizado para ahorrar datos y batería.
+🔐 Seguridad Máxima: Cifrado de alta seguridad aplicado a toda la información guardada en tu dispositivo."
+31/08/2026,v0.99.50,2650,Beta,"🚀 Gran Salto de Calidad: Reconstrucción total del motor interno. ¡Ahora mucho más rápida y profesional!
+📚 Documentación Maestra: Todo el código estandarizado para un soporte técnico de excelencia.
+🌍 Preparados para el Mundo: Unificación de términos técnicos para futura internacionalización.
+💎 Interfaz Limpia: Recursos optimizados y corrección de pequeños detalles visuales."
+23/08/2026,v0.99.40,2620,Beta,"🐞 Reporte de Errores: Informa de fallos directamente a nuestro equipo de GitHub.
+⚡ Motor Renovado: Migración a Retrofit 2 para una carga de contenidos mucho más veloz.
+🖼️ Diseño Adaptable: Tarjetas optimizadas para verse perfectas incluso sin imágenes.
+🔧 Cero Fallos: Solucionados errores en el sistema de votos y mejoras en la documentación."
+18/08/2026,v0.99.35,2610,Beta,"🔐 Sesión Permanente: Renovación automática de accesos para tu comodidad.
+🎨 Estilo 'Celeste': Nueva interfaz basada en Material Design 3 Expressive.
+🌙 Modo Oscuro: Soporte visual mejorado para el uso nocturno.
+✨ Tarjetas Unificadas: Diseño de cuadros de información más armónico y consistente."
+14/08/2026,v0.99.30,2605,Beta,"🚀 Diagnóstico Interno: Nueva consola de logs para facilitar la resolución de problemas técnicos.
+🔐 Acceso Seguro: Verificación de identidad mejorada para tu tranquilidad.
+🔄 Carruseles Fluidos: Navegación más suave en las secciones de la pantalla de inicio.
+📊 Mis Publicaciones: Carga automática de tus posts (scroll infinito) y mayor estabilidad."
+04/08/2026,v0.99.25,2596,Beta,"🛠️ Adiós Sketchware: Migramos oficialmente a Android Studio para potenciar el desarrollo.
+📡 Conexión Fiable: Mejoras críticas de estabilidad con el nuevo servidor Render.
+🚨 Soporte Pro: Implementación del sistema de reporte de errores profesional.
+🔄 Recarga Suave: Animaciones precisas al actualizar contenidos."
+21/07/2026,v0.99.22,2593,Beta,"📊 Listas Inteligentes: Gestión centralizada de estados (Cargando, Vacío, Error).
+🔧 Corrección de Pie de Página: Los indicadores de carga ahora solo aparecen cuando es necesario.
+📱 Perfil Estable: Solucionado el error que impedía ver tus posts al entrar al perfil."
+20/07/2026,v0.99.21,2592,Beta,"👤 Perfil Renovado: Nuevo diseño con secciones dedicadas a estadísticas y tus publicaciones.
+📱 Navegación entre Pestañas: Desliza lateralmente sin bloqueos ni interferencias.
+🔧 Clics Precisos: Ya no hay conflictos táctiles en la parte superior de la pantalla."
+18/07/2026,v0.99.20,2591,Beta,"🔧 Estabilidad de Scroll: Eliminamos el salto visual al tocar el último elemento de una lista.
+🔄 Swipe Optimizado: Configuración mejorada del gesto de refresco en todas las secciones.
+🐛 Pulido Visual: Los elementos de las listas ahora responden mejor a la interacción."
+15/07/2026,v0.99.19,2520,Beta,"📶 Indicadores de Carga: Implementación de indicadores en la base de las listas paginadas.
+⚡ Suavidad: Mayor fluidez al navegar por contenidos extensos."
+05/07/2026,v0.99.15,2456,Beta,"🔑 Identidad Segura: Migración a un sistema basado en UUID para mayor protección de datos.
+🔧 Adaptación Técnica: Actualización masiva de la estructura técnica interna."
+25/06/2026,v0.99.12,2381,Beta,"🔄 Refactorización: Uso masivo de RecyclerView para evitar conflictos visuales.
+🔐 Seguridad: Solucionados errores críticos de persistencia de sesión.
+🆕 Actualizaciones: Comprobación manual disponible desde 'Acerca de'."
+15/06/2026,v0.99.10,2305,Beta,"🏠 Home Informativo: Añadidos el turno de clase actual y la efeméride del día.
+📶 Modo Offline AES: Sistema de caché mejorado con cifrado de alta seguridad.
+🔐 Validación: Implementación de tiempos de expiración y validación de sesión."
+05/06/2026,v0.99.8,2217,Beta,"🚀 Nuevo Horizonte: Migración crítica a Supabase y Node.js para eliminar esperas y errores de datos."
+20/05/2026,v0.99.5,2134,Beta,"🕒 Horario Ágil: Nueva visualización mediante ViewFlipper para mayor dinamismo.
+❤️ Votos Corregidos: Mejoras en la interfaz de Likes y Dislikes."
+10/05/2026,v0.99.0,2067,Beta,"🔔 Navegación Precisa: Corregidos los avisos y atajos que te llevaban a lugares equivocados.
+🔧 Limpieza: Primera gran optimización interna para que la App sea más rápida."
+25/04/2026,v0.98.0,1978,Beta,"📶 Ahorro de Datos: Implementación del CacheManager para una navegación más económica."
+10/04/2026,v0.97.0,1893,Beta,"⚡ Velocidad: Optimización radical de la velocidad de respuesta de la red."
+25/03/2026,v0.95.0,1812,Beta,"⚙️ Ajustes Avanzados: Nueva sección de servicios y optimización de listas de ajustes."
+10/03/2026,v0.90.0,1721,Beta,"🎨 Personalización Total: Lanzamiento de pantallas de Ajustes, Apariencia y Acerca de."
+25/02/2026,v0.85.0,1642,Beta,"🔧 Corrección: Solucionados problemas de carga en listas con mucha información."
+10/02/2026,v0.80.0,1567,Beta,"🕒 Horario Escolar: Remasterización visual y carga dinámica de grupos."
+25/01/2026,v0.75.0,1498,Beta,"🔔 Sonidos Propios: Notificaciones con identidad sonora única de PreuSync."
+10/01/2026,v0.70.0,1423,Beta,"❤️ Votos Estables: Solucionados los problemas donde tus Likes no se guardaban correctamente."
+25/12/2025,v0.65.0,1356,Beta,"🔧 Estabilidad: Mejora del rendimiento y solución de cierres en el envío de reportes."
+05/12/2025,v0.60.0,1289,Beta,"💎 Código Limpio: Centralización de lógica para una App más ligera."
+15/11/2025,v0.55.0,1212,Beta,"📝 Lectura PRO: El contenido ahora soporta resaltado de código en 120+ lenguajes."
+25/10/2025,v0.50.0,1145,Beta,"📖 Markdown: Nueva tecnología de lectura de publicaciones para mayor compatibilidad."
+05/10/2025,v0.45.0,1078,Beta,"🔐 Acceso Mejorado: Solucionados problemas que cerraban tu sesión inesperadamente.
+✨ Markdown: Primeros experimentos con lectura de texto enriquecido."
+15/09/2025,v0.40.0,1024,Beta,"📱 Preparados: Soporte técnico inicial para la llegada de Android 16."
+25/08/2025,v0.36.0,968,Beta,"📡 Sincronización: Mejoras en la sincronización automática en segundo plano."
+05/08/2025,v0.33.0,901,Beta,"🎨 Personalización: Primeros pasos del selector de fechas y temas."
+15/07/2025,v0.30.0,845,Beta,"👤 Avatar Dinámico: Nuevo selector de avatar con estilos por rol.
+🕒 Horario: Primeras pruebas del resaltado de clase actual."
+25/06/2025,v0.27.0,789,Beta,"✨ Diseño: Rediseño de paneles desplegables (BottomSheets)."
+05/06/2025,v0.25.0,723,Beta,"🎨 Colores: Soporte inicial para colores dinámicos del sistema."
+15/05/2025,v0.23.0,657,Beta,"✨ Nuevo Look: Mejoras estéticas en el diseño general de la App."
+25/04/2025,v0.21.0,589,Beta,"🔧 Corrección: Solucionados errores en la sincronización de datos."
+05/04/2025,v0.19.0,524,Beta,"⚙️ Sistema: Estructura base para el trabajo de datos en segundo plano."
+15/03/2025,v0.17.0,468,Beta,"📶 Offline: Primeros experimentos de navegación sin internet con memoria caché."
+25/02/2025,v0.15.0,412,Beta,"🖼️ Visual: Efectos visuales mejorados para las portadas de noticias."
+05/02/2025,v0.13.0,356,Beta,"👤 Perfil: Selección de imagen de perfil al registrarse."
+15/01/2025,v0.12.0,312,Alpha,"📋 Detalles: Paneles de detalles para noticias y publicaciones."
+25/12/2024,v0.10.0,268,Alpha,"📆 Novedades: Añadida la sección de efemérides y corrección en el Home."
+05/12/2024,v0.9.0,215,Alpha,"❤️ Reacciones: Ahora puedes marcar si te gustan las publicaciones."
+15/11/2024,v0.8.0,178,Alpha,"✍️ Comunidad: Apertura de la creación de publicaciones con imágenes."
+25/10/2024,v0.7.0,124,Alpha,"🏠 Inicio: Lanzamiento del diseño inicial del feed de noticias."
+10/10/2024,v0.6.0,89,Alpha,"📆 Eventos: Implementación de la primera agenda de actividades."
+20/09/2024,v0.5.0,56,Alpha,"🔐 Bienvenida: Primera versión del sistema de acceso de usuarios."
+05/09/2024,v0.3.0,28,Alpha,"📰 Novedades: Integración de la sección de noticias con la red."
+22/08/2024,v0.2.0,12,Alpha,"🔑 Backend: Conectividad de datos mediante Google Apps Script."
+15/08/2024,v0.1.0,1,Alpha,"🚀 Comienzo: Estructura base de navegación de PreuSync."

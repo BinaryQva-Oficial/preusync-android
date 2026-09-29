@@ -228,7 +228,10 @@ public class ProfileEditorHelper {
         data.put("first_name", firstNameET.getText().toString().trim());
         data.put("last_name", lastNameET.getText().toString().trim());
         data.put("role", currentRoleValue);
-        if (currentRoleValue.equals(RoleHelper.ROLE_STUDENT)) { data.put("school", schoolET.getText().toString().trim()); data.put("group", groupET.getText().toString().trim()); }
+        if (currentRoleValue.equals(RoleHelper.ROLE_STUDENT)) {
+            data.put("school_id", schoolET.getText().toString().trim());
+            data.put("group", groupET.getText().toString().trim());
+        }
         else if (currentRoleValue.equals(RoleHelper.ROLE_TUTOR)) data.put("tutee", tuteeET.getText().toString().trim());
         else data.put("responsibilities", responsibilitiesET.getText().toString().trim());
         
@@ -253,6 +256,10 @@ public class ProfileEditorHelper {
         BottomSheetDialog selector = new BottomSheetDialog(activity);
         View v = LayoutInflater.from(context).inflate(R.layout.bottomsheet_avatar_selector, null);
         selector.setContentView(v);
+        View bs = selector.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bs != null) {
+            bs.setBackgroundResource(android.R.color.transparent);
+        }
         v.findViewById(R.id.uploadImageLayout).setOnClickListener(view -> filePickerHelper.pickFile("image/jpeg", new FilePickerHelper.OnFilePickedListener() {
             @Override public void onFilePicked(String path, String name, String mime, String base64) {
                 pathBase64 = base64; avatarIV.setImageBitmap(FileUtils.decodeSampleBitmapFromPath(path, 256, 256));

@@ -31,7 +31,7 @@ public class SignupRequest {
     @SerializedName("role")
     private String role;
 
-    @SerializedName("school_id")
+    @SerializedName("schoolId")
     private String schoolId;
 
     @SerializedName("groupId")

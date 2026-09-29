@@ -16,7 +16,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorBackground"
+    android:background="@drawable/bg_bottom_sheet"
     android:paddingBottom="@dimen/padding_8dp">
 
     <!-- Header -->

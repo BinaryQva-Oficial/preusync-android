@@ -3,25 +3,25 @@
     ============================================================================
     Proyecto: PreuSync
     Recurso: attrs.xml
-    Versión: v1.2.0
-    Descripción: Recurso de atributos personalizados (attrs) para la aplicación.
+    Versión: v1.3.0
+    Descripción: Recurso de atributos personalizados para la aplicación en inglés.
     Autor: JiroxDEV
     Licensed under the GNU Affero General Public License v3
     ============================================================================
 -->
 
 <resources>
-    <attr name="colorExito" format="color" ></attr>
-    <attr name="colorWarning" format="color" ></attr>
-    <attr name="colorHorarioPrincipal" format="color" ></attr>
-    <attr name="colorHorarioAsignatura" format="color" ></attr>
-    <attr name="colorHorarioLibre" format="color" ></attr>
-    <attr name="colorHorarioResaltadoPrincipal" format="color" ></attr>
-    <attr name="colorHorarioResaltadoSecundario" format="color" ></attr>
-    <attr name="colorBackground" format="color" ></attr>
-    <attr name="colorBackgroundCard" format="color" ></attr>
-    <attr name="colorText" format="color" ></attr>
-    <attr name="colorTextHint" format="color" ></attr>
+    <attr name="colorSuccess" format="color" />
+    <attr name="colorWarning" format="color" />
+    <attr name="colorScheduleHeader" format="color" />
+    <attr name="colorScheduleSubject" format="color" />
+    <attr name="colorScheduleBreak" format="color" />
+    <attr name="colorScheduleHighlightHeader" format="color" />
+    <attr name="colorScheduleHighlightCell" format="color" />
+    <attr name="colorBackground" format="color" />
+    <attr name="colorBackgroundCard" format="color" />
+    <attr name="colorText" format="color" />
+    <attr name="colorTextHint" format="color" />
 
     <!-- Standard Material/AppCompat attributes for Java R class access -->
     <attr name="colorAccent" format="reference|color" />
@@ -38,5 +38,3 @@
     <attr name="containerHeight" format="dimension" />
     <attr name="containerWidth" format="dimension" />
 </resources>
-
-

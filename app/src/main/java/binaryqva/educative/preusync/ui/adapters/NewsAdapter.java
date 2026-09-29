@@ -128,7 +128,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
 
     @Override
     public int getItemCount() {
-        if (data.isEmpty()) return 1;
+        if (data.isEmpty()) return 0;
         return data.size() + (footerState != FooterableAdapter.FOOTER_NONE ? 1 : 0);
     }
 

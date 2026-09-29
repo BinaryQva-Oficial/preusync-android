@@ -117,6 +117,9 @@ public class AuthActivity extends BaseActivity {
         if (getIntent().getBooleanExtra("extra_is_registering", false)) {
             authToggle.check(R.id.toggleRegister);
             switchToRegister();
+        } else {
+            authToggle.check(R.id.toggleLogin);
+            switchToLogin();
         }
     }
 
@@ -337,6 +340,60 @@ public class AuthActivity extends BaseActivity {
                 else tuteeTIL.setHelperText(getString(R.string.label_min_characters));
             }
         });
+
+        TextWatcher avatarWatcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateDefaultAvatar();
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        };
+        regUsernameET.addTextChangedListener(avatarWatcher);
+        firstNameET.addTextChangedListener(avatarWatcher);
+
+        // Eliminación automática de errores al editar el contenido de cualquier campo
+        autoClearError(usernameTIL, usernameET);
+        autoClearError(passwordTIL, passwordET);
+        autoClearError(regUsernameTIL, regUsernameET);
+        autoClearError(regPasswordTIL, regPasswordET);
+        autoClearError(confirmPasswordTIL, confirmPasswordET);
+        autoClearError(firstNameTIL, firstNameET);
+        autoClearError(lastNameTIL, lastNameET);
+        autoClearError(idCardTIL, idCardET);
+        autoClearError(roleTIL, roleAC);
+        autoClearError(provinceTIL, provinceAC);
+        autoClearError(municipalityTIL, municipalityAC);
+        autoClearError(schoolTIL, schoolAC);
+        autoClearError(groupTIL, groupAC);
+        autoClearError(tuteeTIL, tuteeET);
+        autoClearError(responsibilitiesTIL, responsibilitiesET);
+    }
+
+    private void autoClearError(TextInputLayout til, EditText et) {
+        if (til == null || et == null) return;
+        et.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (til.getError() != null) {
+                    til.setError(null);
+                }
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void updateDefaultAvatar() {
+        if (avatarBase64 == null || avatarBase64.isEmpty() || avatarBase64.startsWith("{\"tipo\":")) {
+            String name = regUsernameET != null ? regUsernameET.getText().toString().trim() : "";
+            if (name.isEmpty() && firstNameET != null) {
+                name = firstNameET.getText().toString().trim();
+            }
+            String initial = !name.isEmpty() ? name.substring(0, 1).toUpperCase() : "?";
+            if (avatarIV != null) {
+                avatarIV.setImageBitmap(AvatarHelper.generateInitialAvatar(this, initial, ThemeManager.getColorAccent(this)));
+            }
+            avatarBase64 = "{\"tipo\":\"inicial\",\"inicial\":\"" + initial + "\"}";
+        }
     }
 
     private void observeViewModel() {
@@ -481,6 +538,10 @@ public class AuthActivity extends BaseActivity {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View v = LayoutInflater.from(this).inflate(R.layout.bottomsheet_avatar_selector, null);
         dialog.setContentView(v);
+        View bs = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bs != null) {
+            bs.setBackgroundResource(android.R.color.transparent);
+        }
         v.findViewById(R.id.uploadImageLayout).setOnClickListener(view -> filePicker.pickFile("image/*", new FilePickerHelper.OnFilePickedListener() {
             @Override public void onFilePicked(String path, String name, String mime, String base64) {
                 avatarBase64 = base64; avatarIV.setImageBitmap(FileUtils.decodeSampleBitmapFromPath(path, 512, 512));
@@ -490,6 +551,7 @@ public class AuthActivity extends BaseActivity {
         }));
         v.findViewById(R.id.initialLayout).setOnClickListener(view -> {
             String name = regUsernameET.getText().toString().trim();
+            if (name.isEmpty()) name = firstNameET.getText().toString().trim();
             if (name.isEmpty()) name = "?";
             String initial = name.substring(0, 1).toUpperCase();
             avatarIV.setImageBitmap(AvatarHelper.generateInitialAvatar(this, initial, ThemeManager.getColorAccent(this)));
@@ -591,10 +653,21 @@ public class AuthActivity extends BaseActivity {
     }
 
     private void loginSuccess(AuthResponse data) {
+        if (data == null) return;
         prefs.setSupabaseAccessToken(data.getSessionToken());
-        prefs.setSupabaseUserId(data.getUser().getId());
-        prefs.setSchoolId(data.getProfile().getSchoolId());
-        prefs.setUsername(data.getProfile().getUsername());
+        if (data.getRefreshToken() != null && !data.getRefreshToken().isEmpty()) {
+            prefs.setSupabaseRefreshToken(data.getRefreshToken());
+        }
+        if (data.getUser() != null) {
+            prefs.setSupabaseUserId(data.getUser().getId());
+        }
+        if (data.getProfile() != null) {
+            prefs.setSchoolId(data.getProfile().getSchoolId());
+            prefs.setUsername(data.getProfile().getUsername());
+            if (data.getProfile().getGroup() != null) {
+                prefs.setUserGroup(data.getProfile().getGroup());
+            }
+        }
         prefs.setHasAccount(true);
         startActivity(new Intent(this, HomeActivity.class));
         finish();
@@ -603,5 +676,6 @@ public class AuthActivity extends BaseActivity {
     private void initializeLogic() {
         int color = ThemeManager.getThemeColor(this, R.attr.colorBackground);
         getWindow().setStatusBarColor(color); getWindow().setNavigationBarColor(color);
+        updateDefaultAvatar();
     }
 }

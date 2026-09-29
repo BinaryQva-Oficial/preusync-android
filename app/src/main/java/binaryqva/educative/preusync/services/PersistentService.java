@@ -22,6 +22,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.widget.RemoteViews;
@@ -50,7 +51,11 @@ public class PersistentService extends Service {
      */
     private void startForegroundImmediately() {
         try {
-            startForeground(NOTIFICATION_ID, buildSummaryNotification());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, buildSummaryNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else {
+                startForeground(NOTIFICATION_ID, buildSummaryNotification());
+            }
         } catch (Exception e) {
             stopSelf();
         }
@@ -73,7 +78,13 @@ public class PersistentService extends Service {
     }
 
     private void updateNotification() {
-        startForeground(NOTIFICATION_ID, buildSummaryNotification());
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, buildSummaryNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else {
+                startForeground(NOTIFICATION_ID, buildSummaryNotification());
+            }
+        } catch (Exception ignored) { }
     }
 
     /**

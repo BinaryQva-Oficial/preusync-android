@@ -32,6 +32,7 @@ import androidx.work.WorkerParameters;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -206,12 +207,19 @@ public class BackgroundServiceWorker extends Worker {
 
                 List<String> notifiedIds = getNotifiedIds(prefsManager.getNotifiedIdsEvents());
 
+                Calendar calTomorrow = Calendar.getInstance();
+                calTomorrow.add(Calendar.DAY_OF_MONTH, 1);
+                String tomorrowDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calTomorrow.getTime());
+
                 for (Event event : events) {
-                    if (!notifiedIds.contains(event.getId())) {
-                        notifiedIds.add(event.getId());
-                        if (isSchool) newSchoolEventsCount++; else newExternalEventsCount++;
-                        showSimpleNotification(event.getTitle(), context.getString(R.string.notification_event_text, event.getLocation(), event.getTime()),
-                            event.getId().hashCode(), NotificationHelper.CHANNEL_EVENTS, HomeActivity.ACTION_OPEN_EVENT, event.getId(), event.getImageUrl());
+                    String eventDate = event.getDate();
+                    if (eventDate == null || eventDate.isEmpty() || eventDate.equals(tomorrowDate)) {
+                        if (!notifiedIds.contains(event.getId())) {
+                            notifiedIds.add(event.getId());
+                            if (isSchool) newSchoolEventsCount++; else newExternalEventsCount++;
+                            showSimpleNotification(event.getTitle(), context.getString(R.string.notification_event_text, event.getLocation(), event.getTime()),
+                                event.getId().hashCode(), NotificationHelper.CHANNEL_EVENTS, HomeActivity.ACTION_OPEN_EVENT, event.getId(), event.getImageUrl());
+                        }
                     }
                 }
                 prefsManager.setNotifiedIdsEvents(new Gson().toJson(notifiedIds));

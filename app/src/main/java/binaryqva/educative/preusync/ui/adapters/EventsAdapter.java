@@ -125,7 +125,7 @@ public class EventsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        if (data.isEmpty()) return 1;
+        if (data.isEmpty()) return 0;
         return data.size() + (footerState != FooterableAdapter.FOOTER_NONE ? 1 : 0);
     }
 
