@@ -2,8 +2,8 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: ScheduleEntity.java
- * Versión: v1.0.0
- * Descripción: Entidad de Room para la persistencia del horario escolar.
+ * Versión: v2.0.0
+ * Descripción: Entidad de Room para la persistencia del horario escolar unificado.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -24,12 +24,9 @@ public class ScheduleEntity {
     public int shift;
     public String day;
     public String subject;
-    public String scheduleType;
 
-    public ScheduleEntity(@NonNull String id, String groupName, int shift, String day, String subject, String scheduleType) {
+    public ScheduleEntity(@NonNull String id, String groupName, int shift, String day, String subject) {
         this.id = id; this.groupName = groupName; this.shift = shift;
-        this.day = day; this.subject = subject; this.scheduleType = scheduleType;
+        this.day = day; this.subject = subject;
     }
 }
-
-

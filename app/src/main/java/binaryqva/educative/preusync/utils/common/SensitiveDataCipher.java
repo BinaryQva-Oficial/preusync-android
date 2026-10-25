@@ -17,6 +17,7 @@ import android.util.Base64;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 
@@ -60,7 +61,13 @@ public final class SensitiveDataCipher {
     private static SecretKey getKey(Context ctx) throws Exception {
         byte[] salt = getSalt(ctx);
         KeySpec spec = new PBEKeySpec(SEED.toCharArray(), salt, ITERS, KEY_LEN);
-        byte[] k = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
+        SecretKeyFactory factory;
+        try {
+            factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        } catch (NoSuchAlgorithmException e) {
+            factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        }
+        byte[] k = factory.generateSecret(spec).getEncoded();
         return new SecretKeySpec(k, "AES");
     }
 

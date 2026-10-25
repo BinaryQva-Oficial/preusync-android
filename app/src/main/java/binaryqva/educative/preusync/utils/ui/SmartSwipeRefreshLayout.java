@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: SmartSwipeRefreshLayout.java
- * Versión: v4.1.9
- * Descripción: Layout de refresco táctil optimizado para evitar interferencias
- *              con la navegación horizontal (ViewPager2).
+ * Versión: v4.2.0
+ * Descripción: Layout de refresco táctil optimizado para interceptar gestos
+ *              verticales sin interferir con ViewPager2 ni ScrollViews horizontales.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -18,13 +18,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-import binaryqva.educative.preusync.debug.AppLogger;
-
-/**
- * Implementa una detección de gestos estricta. Requiere que la intención
- * de desplazamiento vertical sea significativamente superior a la horizontal
- * antes de activar el indicador de carga.
- */
 public class SmartSwipeRefreshLayout extends CustomSwipeRefreshLayout {
 
     private static final String TAG = "SmartSwipeRefresh";
@@ -33,15 +26,12 @@ public class SmartSwipeRefreshLayout extends CustomSwipeRefreshLayout {
     private int touchSlop;
     private float startX, startY;
     private boolean isDragging;
-    private int minVerticalDragPx;
 
     public SmartSwipeRefreshLayout(Context context) { super(context); init(context); }
     public SmartSwipeRefreshLayout(Context context, AttributeSet attrs) { super(context, attrs); init(context); }
 
     private void init(Context context) {
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        // Umbral de activación: 50dp de desplazamiento vertical descendente.
-        minVerticalDragPx = (int) (50 * context.getResources().getDisplayMetrics().density);
     }
 
     /**
@@ -58,21 +48,21 @@ public class SmartSwipeRefreshLayout extends CustomSwipeRefreshLayout {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 startX = ev.getX(); startY = ev.getY(); isDragging = false;
+                super.onInterceptTouchEvent(ev);
                 return false;
 
             case MotionEvent.ACTION_MOVE:
                 float dx = Math.abs(ev.getX() - startX);
                 float dy = ev.getY() - startY;
 
-                if (Math.abs(dy) > minVerticalDragPx) isDragging = true;
+                if (dy > touchSlop) isDragging = true;
 
                 if (isDragging) {
-                    // REGLA DE ORO: dy > dx * 3.0f (Gesto vertical puro hacia abajo)
-                    // Y la vista objetivo debe estar en el tope superior.
-                    if (dy > dx * 3.0f && !targetScrollableView.canScrollVertically(-1)) {
+                    // Intercepta si el gesto es vertical descendente y el ScrollView está en el tope
+                    if (dy > dx * 1.2f && !targetScrollableView.canScrollVertically(-1)) {
                         return super.onInterceptTouchEvent(ev);
                     }
-                    return false; // Ignoramos si es un gesto diagonal u horizontal.
+                    return false;
                 }
                 return false;
 
@@ -81,8 +71,6 @@ public class SmartSwipeRefreshLayout extends CustomSwipeRefreshLayout {
                 isDragging = false;
                 break;
         }
-        return false;
+        return super.onInterceptTouchEvent(ev);
     }
 }
-
-

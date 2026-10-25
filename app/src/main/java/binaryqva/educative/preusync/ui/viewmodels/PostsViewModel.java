@@ -147,14 +147,33 @@ public class PostsViewModel extends BaseViewModel<Post> {
     }
 
     public void createPost(String title, String details, String imageBase64) {
+        isLoading.setValue(true);
+        AppLogger.d(TAG, "createPost: Publicando post '" + title + "'...");
         CreatePostRequest request = new CreatePostRequest(title, details);
-        if (imageBase64 != null) request.setImageBase64(imageBase64);
+        if (imageBase64 != null && !imageBase64.isEmpty()) request.setImageBase64(imageBase64);
+
         repository.createPost(request, new Callback<ApiResponse<Post>>() {
-            @Override public void onResponse(@NonNull Call<ApiResponse<Post>> call, @NonNull Response<ApiResponse<Post>> response) {
-                operationSuccess.setValue(response.isSuccessful());
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<Post>> call, @NonNull Response<ApiResponse<Post>> response) {
+                isLoading.setValue(false);
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    AppLogger.d(TAG, "createPost onResponse: Post creado exitosamente!");
+                    operationSuccess.setValue(true);
+                    refresh();
+                } else {
+                    String err = response.body() != null ? response.body().getError() : ("HTTP " + response.code());
+                    AppLogger.w(TAG, "createPost error: " + err);
+                    operationSuccess.setValue(false);
+                    paginationState.setValue(PaginationState.error(err));
+                }
             }
-            @Override public void onFailure(@NonNull Call<ApiResponse<Post>> call, @NonNull Throwable t) {
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<Post>> call, @NonNull Throwable t) {
+                isLoading.setValue(false);
+                AppLogger.e(TAG, "createPost onFailure: " + t.getMessage(), t);
                 operationSuccess.setValue(false);
+                paginationState.setValue(PaginationState.error(t.getMessage()));
             }
         });
     }

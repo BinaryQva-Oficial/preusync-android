@@ -166,9 +166,19 @@ public class HomeFeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     static class TitleNewsViewHolder extends RecyclerView.ViewHolder { TitleNewsViewHolder(View v) { super(v); } }
     static class TitlePostsViewHolder extends RecyclerView.ViewHolder { TitlePostsViewHolder(View v) { super(v); } }
 
-    static class NewsRecyclerViewHolder extends RecyclerView.ViewHolder {
+    class NewsRecyclerViewHolder extends RecyclerView.ViewHolder {
         RecyclerView recyclerView; View loader, empty, error;
-        NewsRecyclerViewHolder(View v) { super(v); recyclerView = v.findViewById(R.id.newsRecyclerView); loader = v.findViewById(R.id.newsLoader); empty = v.findViewById(R.id.newsEmptyLayout); error = v.findViewById(R.id.newsErrorLayout); }
+        NewsRecyclerViewHolder(View v) {
+            super(v);
+            recyclerView = v.findViewById(R.id.newsRecyclerView);
+            loader = v.findViewById(R.id.newsLoader);
+            empty = v.findViewById(R.id.newsEmptyLayout);
+            error = v.findViewById(R.id.newsErrorLayout);
+            View.OnClickListener r = view -> { if (viewModel != null) viewModel.loadHomeData(); };
+            if (error != null) error.setOnClickListener(r);
+            View retryBtn = v.findViewById(R.id.newsRetryButton);
+            if (retryBtn != null) retryBtn.setOnClickListener(r);
+        }
         void bindState(int s) {
             loader.setVisibility(s == HomeViewModel.STATE_LOADING ? View.VISIBLE : View.GONE);
             recyclerView.setVisibility(s == HomeViewModel.STATE_SUCCESS ? View.VISIBLE : View.GONE);
@@ -177,9 +187,19 @@ public class HomeFeedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    static class PostsRecyclerViewHolder extends RecyclerView.ViewHolder {
+    class PostsRecyclerViewHolder extends RecyclerView.ViewHolder {
         RecyclerView recyclerView; View loader, empty, error;
-        PostsRecyclerViewHolder(View v) { super(v); recyclerView = v.findViewById(R.id.postsRecyclerView); loader = v.findViewById(R.id.postsLoader); empty = v.findViewById(R.id.postsEmptyLayout); error = v.findViewById(R.id.postsErrorLayout); }
+        PostsRecyclerViewHolder(View v) {
+            super(v);
+            recyclerView = v.findViewById(R.id.postsRecyclerView);
+            loader = v.findViewById(R.id.postsLoader);
+            empty = v.findViewById(R.id.postsEmptyLayout);
+            error = v.findViewById(R.id.postsErrorLayout);
+            View.OnClickListener r = view -> { if (viewModel != null) viewModel.loadHomeData(); };
+            if (error != null) error.setOnClickListener(r);
+            View retryBtn = v.findViewById(R.id.postsRetryButton);
+            if (retryBtn != null) retryBtn.setOnClickListener(r);
+        }
         void bindState(int s) {
             loader.setVisibility(s == HomeViewModel.STATE_LOADING ? View.VISIBLE : View.GONE);
             recyclerView.setVisibility(s == HomeViewModel.STATE_SUCCESS ? View.VISIBLE : View.GONE);

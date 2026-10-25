@@ -429,9 +429,15 @@ public class AuthActivity extends BaseActivity {
         viewModel.getSignupResult().observe(this, res -> { if (res != null && res.isSuccess()) loginSuccess(res.getData()); });
         viewModel.getError().observe(this, err -> {
             if (err == null) return;
-            if ("AUTH_INVALID_CREDENTIALS".equals(err)) passwordTIL.setError(getString(R.string.error_incorrect_password));
-            else if ("AUTH_USER_NOT_FOUND".equals(err)) usernameTIL.setError(getString(R.string.error_user_not_found));
-            else DialogHelper.showErrorDialog(this, err);
+            if ("AUTH_INVALID_PASSWORD".equals(err) || "AUTH_INVALID_CREDENTIALS".equals(err)) {
+                if (passwordTIL != null) passwordTIL.setError(getString(R.string.error_incorrect_password));
+                if (usernameTIL != null) usernameTIL.setError(null);
+            } else if ("AUTH_USER_NOT_FOUND".equals(err)) {
+                if (usernameTIL != null) usernameTIL.setError(getString(R.string.error_user_not_found));
+                if (passwordTIL != null) passwordTIL.setError(null);
+            } else {
+                DialogHelper.showErrorDialog(this, err);
+            }
         });
     }
 

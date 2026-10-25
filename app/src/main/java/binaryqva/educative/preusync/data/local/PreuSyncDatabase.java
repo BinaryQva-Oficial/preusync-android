@@ -34,7 +34,7 @@ import binaryqva.educative.preusync.data.local.entities.ScheduleEntity;
         EphemerisEntity.class, 
         EventEntity.class, 
         ScheduleEntity.class
-}, version = 1, exportSchema = false)
+}, version = 2, exportSchema = false)
 public abstract class PreuSyncDatabase extends RoomDatabase {
     private static volatile PreuSyncDatabase instance;
 

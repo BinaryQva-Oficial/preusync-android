@@ -45,7 +45,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 		
 		// 1. APLICACIÓN DINÁMICA DE IDIOMA:
 		String language = prefs.getLanguage();
-		if (language == null) language = LocaleManager.getCurrentLanguage(newBase);
+		if (language == null || "system".equalsIgnoreCase(language)) language = LocaleManager.getCurrentLanguage(newBase);
 		Context contextWithLocale = LocaleManager.setLocale(newBase, language);
 		
 		// 2. ESCALADO DE FUENTES PERSONALIZADO:

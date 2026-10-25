@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: SwipeRefreshHelper.java
- * Versión: v1.2.2
+ * Versión: v1.3.0
  * Descripción: Ayudante para la personalización de SwipeRefreshLayout.
- *              Implementa drawables dinámicos y lógica de desvanecimiento.
+ *              Mantiene el indicador dinámico visible durante todo el refresco.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -14,11 +14,9 @@ package binaryqva.educative.preusync.utils.ui;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
@@ -27,12 +25,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.lang.reflect.Field;
 
-import binaryqva.educative.preusync.utils.common.AppUtils;
-
-/**
- * Sustituye el indicador de progreso nativo de Android por uno personalizado 
- * (CustomSwipeRefreshDrawable) mediante reflexión para una estética coherente.
- */
 public class SwipeRefreshHelper implements ViewTreeObserver.OnPreDrawListener {
 
     private final SwipeRefreshLayout swipeRefreshLayout;
@@ -43,9 +35,7 @@ public class SwipeRefreshHelper implements ViewTreeObserver.OnPreDrawListener {
     private ImageView circleImageView;
     private int originalOffsetTop, spinnerOffsetEnd;
 
-    private final Handler fadeOutHandler = new Handler();
-    private Runnable fadeOutRunnable;
-    private final Handler postRefreshHandler = new Handler();
+    private final Handler postRefreshHandler = new Handler(Looper.getMainLooper());
     private Runnable postRefreshRunnable;
 
     private OnRefreshListener onRefreshListener;
@@ -63,7 +53,6 @@ public class SwipeRefreshHelper implements ViewTreeObserver.OnPreDrawListener {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             startRefreshingAnimation();
             if (onRefreshListener != null) onRefreshListener.onRefresh();
-            scheduleFadeOut();
         });
 
         // Configuración en diferido para asegurar que la jerarquía esté inflada.
@@ -116,33 +105,30 @@ public class SwipeRefreshHelper implements ViewTreeObserver.OnPreDrawListener {
         return true;
     }
 
-    public void startRefreshingAnimation() { if (customDrawable != null) customDrawable.startRefreshingAnimation(); }
-
-    private void scheduleFadeOut() {
-        if (fadeOutRunnable != null) fadeOutHandler.removeCallbacks(fadeOutRunnable);
-        fadeOutRunnable = () -> {
-            if (customDrawable != null && swipeRefreshLayout.isRefreshing()) customDrawable.fadeOutDrawable(AppUtils.getScaledDuration(context, 300), null);
-        };
-        fadeOutHandler.postDelayed(fadeOutRunnable, AppUtils.getScaledDuration(context, 1200));
+    public void startRefreshingAnimation() {
+        if (customDrawable != null) {
+            customDrawable.resetAlpha();
+            customDrawable.startRefreshingAnimation();
+        }
     }
 
     /**
-     * Concluye el estado de refresco y reinicia el indicador visual tras una pausa.
+     * Concluye el estado de refresco y reinicia el indicador visual.
      */
     public void finishRefresh() {
         swipeRefreshLayout.setRefreshing(false);
         if (postRefreshRunnable != null) postRefreshHandler.removeCallbacks(postRefreshRunnable);
         postRefreshRunnable = () -> {
-            if (customDrawable != null) { customDrawable.resetAlpha(); customDrawable.stopRefreshingAnimation(); }
+            if (customDrawable != null) {
+                customDrawable.stopRefreshingAnimation();
+                customDrawable.resetAlpha();
+            }
         };
-        postRefreshHandler.postDelayed(postRefreshRunnable, AppUtils.getScaledDuration(context, 1000));
+        postRefreshHandler.postDelayed(postRefreshRunnable, 200);
     }
 
     public void cleanup() {
         if (circleImageView != null) circleImageView.getViewTreeObserver().removeOnPreDrawListener(this);
-        if (fadeOutRunnable != null) fadeOutHandler.removeCallbacks(fadeOutRunnable);
         if (postRefreshRunnable != null) postRefreshHandler.removeCallbacks(postRefreshRunnable);
     }
 }
-
-

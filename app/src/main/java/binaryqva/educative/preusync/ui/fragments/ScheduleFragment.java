@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: ScheduleFragment.java
- * Versión: v13.0.0
- * Descripción: Fragmento de horario escolar que muestra la tabla oficial
- *              de 16 turnos (5 mañana, 3 tarde, recesos, almuerzo) según la ODS.
+ * Versión: v14.0.0
+ * Descripción: Fragmento de horario escolar organizado con TabLayout (Horario / Leyenda)
+ *              y abreviaturas oficiales puras (CI, T1-T8, D5, R, AZ).
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -20,6 +20,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -31,6 +32,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
@@ -53,9 +55,9 @@ public class ScheduleFragment extends BaseFragment {
     private static final int ROWS = 16;
 
     private static final String[] TURN_LABELS = {
-        "CI", "Turno 1", "Descanso", "Turno 2", "Descanso", "Turno 3", "Merienda",
-        "Turno 4", "Descanso", "Turno 5", "Almuerzo", "Turno 6", "Descanso",
-        "Turno 7", "Descanso", "Turno 8"
+        "CI", "T1", "D5", "T2", "D5", "T3", "R",
+        "T4", "D5", "T5", "AZ", "T6", "D5",
+        "T7", "D5", "T8"
     };
 
     private static final String[] OFFICIAL_TIME_RANGES = {
@@ -71,6 +73,8 @@ public class ScheduleFragment extends BaseFragment {
     private AutoCompleteTextView groupAutoComplete;
     private SwipeRefreshLayout swipeRefreshLayout;
     private MaterialButton retryButton;
+    private TabLayout tabLayoutSchedule;
+    private ScrollView legendScrollView;
 
     private SwipeRefreshHelper swipeRefreshHelper;
     private ScheduleViewModel viewModel;
@@ -90,6 +94,10 @@ public class ScheduleFragment extends BaseFragment {
         groupAutoComplete = view.findViewById(R.id.groupAutoComplete);
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
         retryButton = view.findViewById(R.id.retryButton);
+        tabLayoutSchedule = view.findViewById(R.id.tabLayoutSchedule);
+        legendScrollView = view.findViewById(R.id.legendScrollView);
+
+        setupTabs();
 
         if (swipeRefreshLayout instanceof SmartSwipeRefreshLayout) {
             ((SmartSwipeRefreshLayout) swipeRefreshLayout).setTargetScrollableView(view.findViewById(R.id.scrollView));
@@ -116,9 +124,38 @@ public class ScheduleFragment extends BaseFragment {
         viewModel.loadGroups();
     }
 
+    private void setupTabs() {
+        if (tabLayoutSchedule == null) return;
+        tabLayoutSchedule.removeAllTabs();
+        tabLayoutSchedule.addTab(tabLayoutSchedule.newTab().setText(R.string.title_schedule));
+        tabLayoutSchedule.addTab(tabLayoutSchedule.newTab().setText(R.string.title_legend));
+
+        tabLayoutSchedule.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                int pos = tab.getPosition();
+                if (pos == 0) {
+                    if (swipeRefreshLayout != null) swipeRefreshLayout.setVisibility(View.VISIBLE);
+                    if (legendScrollView != null) legendScrollView.setVisibility(View.GONE);
+                } else {
+                    if (legendScrollView != null) legendScrollView.setVisibility(View.VISIBLE);
+                    if (swipeRefreshLayout != null) swipeRefreshLayout.setVisibility(View.GONE);
+                }
+            }
+
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
+        });
+    }
+
     @Override
     protected void setupObservers() {
-        viewModel.getCombinedState().observe(getViewLifecycleOwner(), this::updateUiState);
+        viewModel.getCombinedState().observe(getViewLifecycleOwner(), state -> {
+            updateUiState(state);
+            if (state == ScheduleViewModel.STATE_SUCCESS) {
+                displaySchedule();
+            }
+        });
 
         viewModel.getGroupsList().observe(getViewLifecycleOwner(), groups -> {
             if (groups != null && !groups.isEmpty()) {
@@ -134,9 +171,7 @@ public class ScheduleFragment extends BaseFragment {
         });
 
         viewModel.getNormalScheduleMap().observe(getViewLifecycleOwner(), map -> {
-            if (viewModel.getCombinedState().getValue() != null && viewModel.getCombinedState().getValue() == ScheduleViewModel.STATE_SUCCESS) {
-                displaySchedule();
-            }
+            displaySchedule();
         });
     }
 

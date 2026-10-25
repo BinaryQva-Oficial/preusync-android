@@ -238,10 +238,10 @@ public class AuthViewModel extends AndroidViewModel {
                         }
                     } catch (Exception ignored) {}
                     
-                    if (response.code() == 404 || "Usuario no encontrado".equals(msg)) {
+                    if (response.code() == 404 || "AUTH_USER_NOT_FOUND".equals(msg) || "Usuario no encontrado".equals(msg)) {
                         error.setValue("AUTH_USER_NOT_FOUND");
-                    } else if (response.code() == 401 || "Credenciales inválidas".equals(msg)) {
-                        error.setValue("AUTH_INVALID_CREDENTIALS");
+                    } else if (response.code() == 401 || "AUTH_INVALID_PASSWORD".equals(msg) || "Credenciales inválidas".equals(msg)) {
+                        error.setValue("AUTH_INVALID_PASSWORD");
                     } else {
                         error.setValue(msg.isEmpty() ? "Error del servidor: " + response.code() : msg);
                     }

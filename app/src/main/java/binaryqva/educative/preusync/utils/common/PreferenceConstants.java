@@ -104,7 +104,7 @@ public final class PreferenceConstants {
 	public static final String KEY_LAST_SCHEDULE_GROUP = "last_schedule_group";
 	
 	// CONFIGURACIÓN DE API:
-	public static final String API_BASE_URL = "https://PreuSync-api.onrender.com/api";
+	public static final String API_BASE_URL = "https://preusync-api-node1.onrender.com/api";
 	
 	private PreferenceConstants() {}
 }

@@ -206,25 +206,10 @@ public class ScheduleViewModel extends AndroidViewModel {
     }
 
     private int getRowIndexForShift(int shift) {
-        switch (shift) {
-            case 0: return 0;  // CI
-            case 1: return 1;  // Turno 1
-            case -1: return 2; // Descanso 1
-            case 2: return 3;  // Turno 2
-            case -2: return 4; // Descanso 2
-            case 3: return 5;  // Turno 3
-            case -3: return 6; // Merienda
-            case 4: return 7;  // Turno 4
-            case -4: return 8; // Descanso 3
-            case 5: return 9;  // Turno 5
-            case -5: return 10; // Almuerzo
-            case 6: return 11; // Turno 6
-            case -6: return 12; // Descanso 4
-            case 7: return 13; // Turno 7
-            case -7: return 14; // Descanso 5
-            case 8: return 15; // Turno 8
-            default: return shift >= 0 && shift < 16 ? shift : -1;
+        if (shift >= 0 && shift < 16) {
+            return shift;
         }
+        return -1;
     }
 
     private int getDayIndex(String day) {

@@ -2,9 +2,9 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: PostsFragment.java
- * Versión: v14.2.0
+ * Versión: v14.3.0
  * Descripción: Fragmento de la comunidad para visualizar e interactuar con 
- *              publicaciones (posts).
+ *              publicaciones (posts), con diálogos de progreso en creación.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -17,6 +17,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,6 +29,9 @@ import binaryqva.educative.preusync.ui.activities.HomeActivity;
 import binaryqva.educative.preusync.ui.adapters.PostsAdapter;
 import binaryqva.educative.preusync.ui.viewmodels.PostsViewModel;
 import binaryqva.educative.preusync.ui.viewmodels.HomeViewModel;
+import binaryqva.educative.preusync.utils.common.AppUtils;
+import binaryqva.educative.preusync.utils.common.DialogHelper;
+import binaryqva.educative.preusync.utils.common.PaginationState;
 
 public class PostsFragment extends PaginatedFeedFragment<Post> {
 
@@ -36,6 +40,7 @@ public class PostsFragment extends PaginatedFeedFragment<Post> {
     private PostsViewModel postsViewModel;
     private HomeViewModel homeViewModel;
     private PostsAdapter postsAdapter;
+    private AlertDialog progressDialog;
 
     @Override protected int getLayoutResId() { return R.layout.fragment_posts; }
     @Override protected String getCacheKey() { return CACHE_KEY; }
@@ -63,6 +68,23 @@ public class PostsFragment extends PaginatedFeedFragment<Post> {
 
     private void observeViewModel() {
         postsViewModel.getPaginationState().observe(getViewLifecycleOwner(), this::handlePaginationState);
+
+        postsViewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            if (Boolean.TRUE.equals(loading) && currentState != null && currentState.state != PaginationState.STATE_LOADING) {
+                if (progressDialog == null || !progressDialog.isShowing()) {
+                    progressDialog = DialogHelper.showProgressDialog(getActivity(), getString(R.string.label_publishing_post), false);
+                }
+            } else if (!Boolean.TRUE.equals(loading) && progressDialog != null) {
+                progressDialog.dismiss();
+                progressDialog = null;
+            }
+        });
+
+        postsViewModel.getOperationSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (Boolean.TRUE.equals(success)) {
+                AppUtils.showMessage(getActivity(), getString(R.string.toast_post_created));
+            }
+        });
     }
 
     @Override protected void loadMoreItems() { if (postsViewModel != null) postsViewModel.loadMore(); }
@@ -79,14 +101,14 @@ public class PostsFragment extends PaginatedFeedFragment<Post> {
     }
 
     public void createPost(String t, String c, String p) {
-        postsViewModel.createPost(t, c, p);
+        if (postsViewModel != null) postsViewModel.createPost(t, c, p);
     }
 
     public void deletePost(String id) {
-        postsViewModel.deletePost(id);
+        if (postsViewModel != null) postsViewModel.deletePost(id);
     }
 
     public void reportPost(String id) {
-        postsViewModel.reportPost(id);
+        if (postsViewModel != null) postsViewModel.reportPost(id);
     }
 }

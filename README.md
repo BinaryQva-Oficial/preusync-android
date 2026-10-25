@@ -151,17 +151,12 @@ PreuSync/
 
 ---
 
-## Licencia y condiciones de uso
+## Licencia y Copyright
 
-### Licencia del proyecto
+PreuSync™ es un proyecto de BinaryQva™. Desarrollado por JiroxDEV.
 
-**PreuSync no es software de código abierto.** El código fuente de esta aplicación se proporciona únicamente con fines educativos y de demostración. No se concede ninguna licencia para su uso, modificación, redistribución o explotación comercial sin el consentimiento expreso por escrito del titular de los derechos de autor.
-
-**El uso de PreuSync es gratuito para fines personales, educativos y sin ánimo de lucro.** Las donaciones son voluntarias y no otorgan ningún derecho adicional sobre el software.
-
-Para cualquier otro uso, incluyendo fines comerciales o institucionales, es necesario contactar al autor para obtener una licencia comercial.
-
-**© 2025-2026 PreuSync. Todos los derechos reservados.**
+© 2026 Daniel Alejandro Pupo González (JiroxDEV). PreuSync™ es un proyecto de BinaryQva™.
+Publicado bajo la Licencia **GNU Affero General Public License v3 (AGPLv3)**.
 
 ---
 

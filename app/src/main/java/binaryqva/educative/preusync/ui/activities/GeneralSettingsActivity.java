@@ -81,16 +81,21 @@ public class GeneralSettingsActivity extends BaseSettingsActivity {
 
     private SelectItem buildLanguageSelectItem() {
         String savedLang = prefs.getLanguage();
-        final String currentLang = (savedLang != null) ? savedLang : Locale.getDefault().getLanguage();
+        final String currentLang = (savedLang != null && !savedLang.isEmpty()) ? savedLang : "system";
 
         List<SelectItem.SelectOption> options = Arrays.asList(
+                new SelectItem.SelectOption(getString(R.string.language_system_default), "system"),
                 new SelectItem.SelectOption("Español", "es"),
                 new SelectItem.SelectOption("English", "en")
         );
 
         return new SelectItem(getString(R.string.title_language), options, currentLang, selected -> {
             if (!selected.equals(currentLang)) {
-                prefs.setLanguage(selected);
+                if ("system".equalsIgnoreCase(selected)) {
+                    prefs.setLanguage(null);
+                } else {
+                    prefs.setLanguage(selected);
+                }
                 ThemeManager.restartApp(GeneralSettingsActivity.this);
             }
         });

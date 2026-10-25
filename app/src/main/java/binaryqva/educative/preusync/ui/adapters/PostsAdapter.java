@@ -201,7 +201,8 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             author.setText(p.getAuthor());
             
             String imageUrl = p.getImageUrl();
-            if (imageUrl != null && !imageUrl.isEmpty()) {
+            boolean isDataSaver = PreferenceManager.getInstance(context).isDataSaverMode();
+            if (imageUrl != null && !imageUrl.isEmpty() && !isDataSaver) {
                 featuredImage.setVisibility(View.VISIBLE);
                 Glide.with(context).load(Uri.parse(imageUrl)).placeholder(new CustomCircularProgressDrawable(context)).into(featuredImage);
             } else featuredImage.setVisibility(View.GONE);

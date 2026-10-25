@@ -109,6 +109,14 @@
                         android:text="@string/error_loading_data"
                         android:textSize="@dimen/text_size_20sp"
                         android:textColor="?attr/colorText" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/retryButton"
+                        style="@style/Widget.PreuSync.Button.Global"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/padding_12dp"
+                        android:text="@string/button_retry" />
                 </LinearLayout>
             </FrameLayout>
         </LinearLayout>

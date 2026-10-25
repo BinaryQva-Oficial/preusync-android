@@ -162,6 +162,7 @@ public class DialogHelper {
 		
 		for (RadioOption option : options) {
 			RadioButton radioButton = new RadioButton(activity);
+			radioButton.setId(View.generateViewId());
 			radioButton.setText(option.label);
 			radioButton.setTag(option.value);
 			radioButton.setTextColor(colorText);

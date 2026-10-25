@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
     ============================================================================
     Proyecto: PreuSync
     Layout: fragment_schedule.xml
-    Versión: v1.9.0
-    Descripción: Fragmento de horario escolar que muestra la tabla de clases según el grupo seleccionado.
+    Versión: v2.0.0
+    Descripción: Fragmento de horario escolar con TabLayout para cambiar entre
+                 la tabla del Horario y la Leyenda Oficial de Asignaturas.
     Autor: JiroxDEV
     Licensed under the GNU Affero General Public License v3
     ============================================================================
@@ -43,7 +44,21 @@
             android:textStyle="bold" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Loader de grupos (visible mientras se cargan los grupos) -->
+    <!-- TabLayout estilizado igual al de eventos -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutSchedule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="?attr/colorBackground"
+        app:tabGravity="fill"
+        app:tabMode="fixed"
+        app:tabIndicatorHeight="3dp"
+        app:tabIndicatorColor="?attr/colorAccent"
+        app:tabSelectedTextColor="?attr/colorAccent"
+        app:tabTextColor="?attr/colorTextHint" />
+
+    <!-- Loader de grupos -->
     <LinearLayout
         android:id="@+id/groupsLoader"
         android:layout_width="match_parent"
@@ -59,20 +74,94 @@
             app:indicatorSize="32dp" />
     </LinearLayout>
 
-    <!-- Contenedor principal con SwipeRefresh -->
+    <!-- Contenedor principal de la pestaña Leyenda (Oculto por defecto) -->
+    <ScrollView
+        android:id="@+id/legendScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="8dp"
+        android:visibility="gone">
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.PreuSync.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Leyenda Oficial de Nomenclaturas y Asignaturas"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorAccent"
+                    android:paddingBottom="12dp" />
+
+                <!-- Sección: Nomenclatura de Jornada -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ESTRUCTURA DE JORNADA Y PAUSAS"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorText"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="4dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• CI : Conversación Inicial (07:50 - 08:00)\n• T1 - T8 : Turnos de Clase 1 a 8\n• D5 / - : Descanso pequeño de 5 minutos\n• R / — : Receso de Merienda (10:25 - 10:50)\n• AZ / /// : Horario de Almuerzo (12:25 - 13:25)\n• ? : Sin turno asignado"
+                    android:textSize="13sp"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="?attr/colorTextHint" />
+
+                <!-- Sección: Asignaturas -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GLOSARIO DE ASIGNATURAS"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorText"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="4dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• M : Matemáticas\n• LL : Literatura y Lengua\n• HC : Historia de Cuba\n• H : Historia Contemporánea\n• B : Biología\n• CP : Cultura Política\n• DC : Defensa Civil\n• IF : Informática\n• I : Inglés\n• Q : Química\n• EF : Educación Física\n• F : Física\n• G : Geografía Regional\n• DR : Debate y Reflexión"
+                    android:textSize="13sp"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="?attr/colorTextHint" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </ScrollView>
+
+    <!-- Contenedor principal con SwipeRefresh para la tabla -->
     <binaryqva.educative.preusync.utils.ui.SmartSwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- ViewFlipper para cambiar entre estados -->
+        <!-- ViewFlipper para cambiar entre estados de la tabla -->
         <ViewFlipper
             android:id="@+id/viewFlipper"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- 0: LOADING (tabla cargando) -->
+            <!-- 0: LOADING -->
             <LinearLayout
                 android:id="@+id/loadingLayout"
                 android:layout_width="match_parent"
@@ -109,7 +198,7 @@
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="@dimen/padding_1dp"
+                        android:padding="1dp"
                         app:cardBackgroundColor="@android:color/transparent"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
@@ -184,5 +273,3 @@
     </binaryqva.educative.preusync.utils.ui.SmartSwipeRefreshLayout>
 
 </LinearLayout>
-
-

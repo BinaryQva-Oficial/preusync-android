@@ -82,6 +82,7 @@
     <string name="label_checking_updates">Comprobando actualizaciones...</string>
     <string name="label_code">código</string>
     <string name="label_creating_account">Creando su cuenta...</string>
+    <string name="label_publishing_post">Publicando...</string>
     <string name="label_creating_post">Creando post...</string>
     <string name="label_date">Fecha</string>
     <string name="label_deleting_post">Eliminando post...</string>
@@ -135,6 +136,7 @@
     <string name="title_general">General</string>
     <string name="title_home">Inicio</string>
     <string name="title_language">Idioma</string>
+    <string name="language_system_default">Predeterminado del sistema</string>
     <string name="title_logout">Cerrar sesión</string>
     <string name="title_news">Noticias</string>
     <string name="title_new_version">Nueva versión disponible</string>
@@ -144,6 +146,7 @@
     <string name="title_post_preview">Vista previa</string>
     <string name="title_profile">Cuenta</string>
     <string name="title_schedule">Horario escolar</string>
+    <string name="title_legend">Leyenda</string>
     <string name="title_select_avatar">Seleccione su avatar</string>
     <string name="title_services">Servicios</string>
     <string name="title_session">Sesión</string>

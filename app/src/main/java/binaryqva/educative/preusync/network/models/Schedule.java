@@ -2,8 +2,8 @@
  * ============================================================================
  * Proyecto: PreuSync
  * Clase: Schedule.java
- * Versión: v2.0.0
- * Descripción: Modelo de datos para el horario escolar con soporte Room.
+ * Versión: v2.1.0
+ * Descripción: Modelo de datos para el horario escolar dinámico unificado.
  * Autor: JiroxDEV
  * Licensed under the GNU Affero General Public License v3
  * ============================================================================
@@ -31,9 +31,6 @@ public class Schedule {
     @SerializedName("subject")
     private String subject;
 
-    @SerializedName("scheduleType")
-    private String scheduleType;
-
     public Schedule() {}
 
     public Schedule(ScheduleEntity entity) {
@@ -43,11 +40,10 @@ public class Schedule {
         this.shift = entity.shift;
         this.day = entity.day;
         this.subject = entity.subject;
-        this.scheduleType = entity.scheduleType;
     }
 
     public ScheduleEntity toEntity() {
-        return new ScheduleEntity(id, group, shift, day, subject, scheduleType);
+        return new ScheduleEntity(id, group, shift, day, subject);
     }
 
     // Getters
@@ -56,7 +52,4 @@ public class Schedule {
     public int getShift() { return shift; }
     public String getDay() { return day; }
     public String getSubject() { return subject; }
-    public String getScheduleType() { return scheduleType; }
 }
-
-
