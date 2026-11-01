@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
     ============================================================================
     Proyecto: PreuSync
     Layout: activity_donate.xml
-    Versión: v1.0.1
-    Descripción: Pantalla de donaciones para apoyar el desarrollo del proyecto.
+    Versión: v2.1.0
+    Descripción: Pantalla de donaciones completas (Zaps Bio, Transfermóvil BPA, USDT redes).
+                 Limpia de emojis con íconos nativos y texto estructurado.
     Autor: JiroxDEV
     Licensed under the GNU Affero General Public License v3
     ============================================================================
@@ -13,11 +14,12 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/donateLayoutContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/donateLayoutContainer">
+    android:orientation="vertical">
+
+    <!-- Action Bar -->
     <LinearLayout
         android:id="@+id/actionBarLayout"
         android:layout_width="match_parent"
@@ -28,6 +30,7 @@
         android:background="?attr/colorBackground"
         android:gravity="center_vertical"
         android:orientation="horizontal">
+
         <ImageButton
             android:id="@+id/backButton"
             android:layout_width="30dp"
@@ -39,6 +42,7 @@
             android:focusable="true"
             android:background="@drawable/ripple_circular"
             style="@style/ImageViewIconStyle" />
+
         <TextView
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
@@ -50,27 +54,232 @@
             android:textColor="?attr/colorAccent"
             android:layout_weight="1" />
     </LinearLayout>
-    <LinearLayout
-        android:id="@+id/mainContainer"
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingHorizontal="8dp"
-        android:paddingBottom="@dimen/padding_bottom_50dp"
-        android:background="?attr/colorBackground"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-        <TextView
-            android:id="@+id/presentationText"
-            android:layout_width="wrap_content"
+        android:background="?attr/colorBackground">
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
-            android:paddingBottom="@dimen/padding_8dp"
-            android:text="@string/label_donation_description"
-            android:textColor="?attr/colorTextHint"
-            android:textSize="@dimen/text_size_12sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="PreuSync es un proyecto 100% gratuito y libre de anuncios. Tus contribuciones nos ayudan a mantener los servidores activos."
+                android:textColor="?attr/colorTextHint"
+                android:textSize="13sp"
+                android:paddingBottom="16dp" />
+
+            <!-- Card 1: Zaps Bio -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.PreuSync.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Zaps Bio (Lightning / Nostr)"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorAccent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Donaciones mediante Bitcoin Lightning Network."
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorTextHint"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnZapsBio"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Abrir Zaps Bio"
+                        style="@style/Widget.PreuSync.Button.Global" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 2: Transfermóvil BPA -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.PreuSync.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Transfermóvil (CUP - Tarjeta BPA)"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorAccent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tarjeta BPA: 9205129976701558"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorText"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCopyBpa"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Copiar Tarjeta BPA"
+                        style="@style/Widget.PreuSync.Button.Global" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 3: Donaciones USDT -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.PreuSync.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Donaciones USDT (Redes Cripto)"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorAccent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Direcciones oficiales para donaciones en USDT:"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorTextHint"
+                        android:paddingTop="4dp" />
+
+                    <!-- BEP20 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingTop="12dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="USDT (Red BEP20 / BNB Chain):\n0x042bF7f30aF43b7A69f18F5Fd28e29179CbA8446"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorTextHint" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCopyBep20"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Copiar"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+                    </LinearLayout>
+
+                    <!-- TRC20 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingTop="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="USDT (Red TRC20 / TRON):\nTEphHAaFE3ogamr4pTZUSSzXXHR8heFHzf"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorTextHint" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCopyTrc20"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Copiar"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+                    </LinearLayout>
+
+                    <!-- SOL -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingTop="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="USDT (Red SOL / Solana):\nH8J5tCkC38hXQoNC6K6Yv8P8k5irGFA5XQiGVxyw25iR"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorTextHint" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCopySol"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Copiar"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+                    </LinearLayout>
+
+                    <!-- TON -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingTop="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="USDT (Red TON / Toncoin):\nUQD31gwYfU9T8sSQ_V76htxPRm2RUVNWzb4QwEnmYmHDUSsk"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorTextHint" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCopyTon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Copiar"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
-
-
